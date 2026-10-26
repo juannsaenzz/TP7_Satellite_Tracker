@@ -22,6 +22,7 @@ import { SkyChart } from './src/presentation/components/SkyChart';
 import { SatelliteSearchModal } from './src/presentation/components/SatelliteSearchModal';
 import { WorldMap } from './src/presentation/components/WorldMap';
 import { CompassModal } from './src/presentation/components/CompassModal';
+import { NotificationService } from './src/core/notifications/NotificationService';
 import { GroundTrackResult, GroundTrackService } from './src/core/orbital/GroundTrackService';
 import { CatalogService } from './src/core/services/CatalogService';
 import { Satellite } from './src/domain/models/Satellite';
@@ -57,6 +58,22 @@ export default function App() {
   const [validating, setValidating] = useState(false);
   const [catalogModalVisible, setCatalogModalVisible] = useState(false);
   const [compassModalVisible, setCompassModalVisible] = useState(false);
+  const [scheduledAlertText, setScheduledAlertText] = useState<string | null>(null);
+
+  async function handleScheduleReminder() {
+    if (!nextPass) return;
+    const result = await NotificationService.schedulePassAlert(nextPass, 10);
+    if (result) {
+      setScheduledAlertText(`Alert set for ${result.triggerTime.toLocaleTimeString()} (10m before AOS)`);
+    } else {
+      setScheduledAlertText('Pass already started or in the past');
+    }
+  }
+
+  async function handleTestNotification() {
+    await NotificationService.sendImmediateTestAlert(tleInfo?.name || 'ISS (ZARYA)');
+    setScheduledAlertText('Test notification dispatched!');
+  }
 
   // Geographic Map state (RF-10, RF-11, RF-12, RF-13)
   const [groundTrack, setGroundTrack] = useState<GroundTrackResult | null>(null);
@@ -419,6 +436,29 @@ export default function App() {
                   satelliteName={tleInfo?.name}
                 />
               </View>
+
+              {/* Notification Reminders Row (RF-06) */}
+              <View style={styles.notificationActionsRow}>
+                <TouchableOpacity
+                  style={styles.scheduleButton}
+                  onPress={handleScheduleReminder}
+                  activeOpacity={0.8}>
+                  <Text style={styles.scheduleButtonText}>🔔 SCHEDULE PASS ALERT (RF-06)</Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                  style={styles.testNotificationButton}
+                  onPress={handleTestNotification}
+                  activeOpacity={0.8}>
+                  <Text style={styles.testNotificationText}>⚡ TEST NOTIF</Text>
+                </TouchableOpacity>
+              </View>
+
+              {scheduledAlertText && (
+                <View style={styles.alertSuccessBadge}>
+                  <Text style={styles.alertSuccessText}>✓ {scheduledAlertText}</Text>
+                </View>
+              )}
             </>
           ) : (
             <Text style={styles.noPassText}>No visible passes above 10° in the next 72h.</Text>
@@ -810,6 +850,56 @@ const styles = StyleSheet.create({
     color: colors.accentGold,
     fontSize: 11,
     fontWeight: '800',
+  },
+  notificationActionsRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginTop: 14,
+  },
+  scheduleButton: {
+    flex: 2,
+    backgroundColor: colors.surface,
+    paddingVertical: 10,
+    borderRadius: 8,
+    alignItems: 'center',
+    marginRight: 6,
+    borderWidth: 1,
+    borderColor: colors.accentMint,
+  },
+  scheduleButtonText: {
+    color: colors.accentMint,
+    fontSize: 10,
+    fontWeight: '800',
+    letterSpacing: 0.5,
+  },
+  testNotificationButton: {
+    flex: 1,
+    backgroundColor: colors.surface,
+    paddingVertical: 10,
+    borderRadius: 8,
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: colors.primary,
+  },
+  testNotificationText: {
+    color: colors.primaryNeon,
+    fontSize: 10,
+    fontWeight: '800',
+  },
+  alertSuccessBadge: {
+    backgroundColor: 'rgba(125, 255, 175, 0.12)',
+    paddingVertical: 6,
+    paddingHorizontal: 10,
+    borderRadius: 8,
+    marginTop: 8,
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: colors.accentMint,
+  },
+  alertSuccessText: {
+    color: colors.accentMint,
+    fontSize: 11,
+    fontWeight: '700',
   },
   passList: {
     flexDirection: 'row',

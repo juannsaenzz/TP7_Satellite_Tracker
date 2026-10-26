@@ -27,3 +27,20 @@ jest.mock('react-native-maps', () => {
     UrlTile: MockUrlTile,
   };
 });
+
+jest.mock('@notifee/react-native', () => ({
+  createChannel: jest.fn(() => Promise.resolve('passes')),
+  requestPermission: jest.fn(() => Promise.resolve({ authorizationStatus: 1 })),
+  displayNotification: jest.fn(() => Promise.resolve('test-id')),
+  createTriggerNotification: jest.fn(() => Promise.resolve('trigger-id')),
+  cancelNotification: jest.fn(() => Promise.resolve()),
+  getTriggerNotificationIds: jest.fn(() => Promise.resolve([])),
+  AndroidImportance: {
+    HIGH: 4,
+    DEFAULT: 3,
+  },
+  TriggerType: {
+    TIMESTAMP: 0,
+    INTERVAL: 1,
+  },
+}));
