@@ -41,19 +41,39 @@ export const WorldMap: React.FC<WorldMapProps> = ({
   onToggleConstellation,
   onToggleFootprint,
 }) => {
-  // Generate footprint polygon coordinates
-  const footprintPoints = useMemo(() => {
-    if (!currentPosition || !showFootprint) return '';
-    const coords = FootprintService.generateFootprintPolygon(
+  // Generate footprint polygon coordinates with antimeridian seam wrapping
+  const footprintPolygons = useMemo(() => {
+    if (!currentPosition || !showFootprint) return [];
+    const coords = FootprintService.generateContinuousFootprintPolygon(
       currentPosition.latitude,
       currentPosition.longitude,
       currentPosition.altitude,
       10,
-      36
+      48
     );
-    return coords
-      .map(p => `${(p.longitude + 180).toFixed(1)},${(90 - p.latitude).toFixed(1)}`)
-      .join(' ');
+    if (coords.length === 0) return [];
+
+    const primaryPts = coords.map(p => ({
+      x: p.longitude + 180,
+      y: 90 - p.latitude,
+    }));
+
+    const result: string[] = [];
+
+    // Base polygon
+    result.push(primaryPts.map(p => `${p.x.toFixed(1)},${p.y.toFixed(1)}`).join(' '));
+
+    // If crossing west of antimeridian (x < 0), duplicate shifted right by +360
+    if (primaryPts.some(p => p.x < 0)) {
+      result.push(primaryPts.map(p => `${(p.x + 360).toFixed(1)},${p.y.toFixed(1)}`).join(' '));
+    }
+
+    // If crossing east of antimeridian (x > 360), duplicate shifted left by -360
+    if (primaryPts.some(p => p.x > 360)) {
+      result.push(primaryPts.map(p => `${(p.x - 360).toFixed(1)},${p.y.toFixed(1)}`).join(' '));
+    }
+
+    return result;
   }, [currentPosition, showFootprint]);
 
   // Project observer
@@ -96,14 +116,16 @@ export const WorldMap: React.FC<WorldMapProps> = ({
         />
 
         {/* Footprint Coverage Area */}
-        {showFootprint && footprintPoints !== '' && (
-          <SvgPolygon
-            points={footprintPoints}
-            fill="rgba(114, 65, 248, 0.22)"
-            stroke="#8B5CF6"
-            strokeWidth="0.8"
-          />
-        )}
+        {showFootprint &&
+          footprintPolygons.map((pts, idx) => (
+            <SvgPolygon
+              key={`footprint-${idx}`}
+              points={pts}
+              fill="rgba(114, 65, 248, 0.22)"
+              stroke="#8B5CF6"
+              strokeWidth="0.8"
+            />
+          ))}
 
         {/* Past Ground Track Segments */}
         {groundTrack?.pastSegments.map((segment, idx) => {
@@ -114,6 +136,7 @@ export const WorldMap: React.FC<WorldMapProps> = ({
             <SvgPolyline
               key={`past-${idx}`}
               points={pts}
+              fill="none"
               stroke="rgba(114, 65, 248, 0.75)"
               strokeWidth="1.6"
               strokeDasharray="4,3"
@@ -130,6 +153,7 @@ export const WorldMap: React.FC<WorldMapProps> = ({
             <SvgPolyline
               key={`future-${idx}`}
               points={pts}
+              fill="none"
               stroke={colors.accentMint}
               strokeWidth="2.2"
             />

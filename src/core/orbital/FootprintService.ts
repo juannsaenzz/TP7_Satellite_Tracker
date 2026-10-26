@@ -82,4 +82,45 @@ export class FootprintService {
 
     return coords;
   }
+
+  /**
+   * Generates footprint polygon vertices with continuous longitudes (unwrapped),
+   * preventing antimeridian jump artifacts when rendering on 2D equirectangular maps.
+   */
+  public static generateContinuousFootprintPolygon(
+    centerLat: number,
+    centerLon: number,
+    altitudeKm: number,
+    minElevationDeg: number = 0,
+    numPoints: number = 64
+  ): LatLng[] {
+    const thetaRad = this.calculateAngularRadiusRadians(altitudeKm, minElevationDeg);
+    if (thetaRad <= 0) return [];
+
+    const lat0 = (centerLat * Math.PI) / 180.0;
+    const lon0 = (centerLon * Math.PI) / 180.0;
+
+    const coords: LatLng[] = [];
+
+    for (let i = 0; i <= numPoints; i++) {
+      const alpha = (i * 2 * Math.PI) / numPoints;
+
+      const sinLat = Math.sin(lat0) * Math.cos(thetaRad) + Math.cos(lat0) * Math.sin(thetaRad) * Math.cos(alpha);
+      const lat = Math.asin(Math.max(-1, Math.min(1, sinLat)));
+
+      const y = Math.sin(alpha) * Math.sin(thetaRad) * Math.cos(lat0);
+      const x = Math.cos(thetaRad) - Math.sin(lat0) * Math.sin(lat);
+      const dLon = Math.atan2(y, x);
+
+      // Keep continuous without antimeridian normalization wrap
+      const lon = lon0 + dLon;
+
+      coords.push({
+        latitude: (lat * 180.0) / Math.PI,
+        longitude: (lon * 180.0) / Math.PI,
+      });
+    }
+
+    return coords;
+  }
 }
