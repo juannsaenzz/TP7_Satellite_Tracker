@@ -7,7 +7,7 @@
 
 ---
 
-## 🛰️ Descripción General
+## Descripción General
 
 **Satellite Tracker** es una aplicación móvil nativa desarrollada con **React Native (TypeScript)** que calcula la posición en tiempo real de satélites artificiales en órbita terrestre baja (LEO) y media (MEO) mediante propagación analítica **SGP4 / SDP4** ejecutada **100% de manera local en el dispositivo**.
 
@@ -15,7 +15,7 @@ La aplicación opera de forma totalmente autónoma y desconectada, consumiendo d
 
 ---
 
-## 🚀 Características Principales
+## Características Principales
 
 1. **Propagador Orbital Local SGP4/SDP4:**
    - Cálculo analítico continuo de latitud, longitud y altitud geodésica WGS84 a 1 Hz sin streaming de servidores externos.
@@ -39,7 +39,7 @@ La aplicación opera de forma totalmente autónoma y desconectada, consumiendo d
 
 ---
 
-## 🏛️ Arquitectura del Software
+## Arquitectura del Software
 
 El proyecto sigue una arquitectura limpia en capas desacopladas:
 
@@ -64,17 +64,17 @@ src/
 
 ---
 
-## 📑 Documentación Técnica de Entrega
+## Documentación Técnica de Entrega (PDFs)
 
-El proyecto incluye la documentación técnica exigida por la Sección 6 del PRD:
+El proyecto incluye los 3 informes técnicos exigidos por la Sección 6 del PRD (entregados en formato PDF adjunto):
 
-- 📘 [Documento Técnico de Propagación y Geometría](docs/documento_tecnico.md): Fundamentos de astrodinámica, transformaciones TEME $\rightarrow$ ECEF $\rightarrow$ Geodésico $\rightarrow$ Topocéntrico SEZ, algoritmos de antimeridiano y limitaciones físicas de SGP4.
-- 📊 [Informe de Validación y Precisión Orbital](docs/informe_validacion.md): Tabla comparativa empírica de 10 muestras temporales contra *Where The ISS At?*, descomposición de error en superficie y altitud, y curva de degradación según la antigüedad del TLE.
-- 🛰️ [Decisiones de Fuentes de Datos y Estrategia de Caché](docs/decisiones_fuentes_datos.md): Comparativa CelesTrak / Space-Track / N2YO / Where The ISS At?, justificación técnica de **Starlink SupGP** derivado de efemérides del operador frente a TLEs de radar balísticos, y diseño de la cascada de conmutación ante caídas.
+- **Documento Técnico de Propagación y Geometría (`documento_tecnico.pdf`):** Fundamentos de astrodinámica, transformaciones TEME $\rightarrow$ ECEF $\rightarrow$ Geodésico $\rightarrow$ Topocéntrico SEZ, algoritmos de antimeridiano y limitaciones físicas de SGP4.
+- **Informe de Validación y Precisión Orbital (`informe_validacion.pdf`):** Tabla comparativa empírica de 10 muestras temporales contra *Where The ISS At?*, descomposición de error en superficie y altitud, y curva de degradación según la antigüedad del TLE.
+- **Decisiones de Fuentes de Datos y Estrategia de Caché (`decisiones_fuentes_datos.pdf`):** Comparativa CelesTrak / Space-Track / N2YO / Where The ISS At?, justificación técnica de **Starlink SupGP** derivado de efemérides del operador frente a TLEs de radar balísticos, y diseño de la cascada de conmutación ante caídas.
 
 ---
 
-## 🧪 Pruebas Unitarias
+## Pruebas Unitarias
 
 La suite de tests unitarios desarrollada con Jest cubre todos los módulos matemáticos y de infraestructura:
 
@@ -98,7 +98,7 @@ Tests:       31 passed, 31 total
 
 ---
 
-## 📲 Instalación y Ejecución
+## Instalación y Ejecución
 
 ### Prerrequisitos
 - Node.js >= 18

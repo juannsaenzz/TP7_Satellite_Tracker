@@ -83,3 +83,9 @@ android/app/src/main/res/drawable-*/
 *.apk
 *.aab
 
+# Deliverables (except README.md)
+docs/
+*.pdf
+*.md
+!README.md
+
