@@ -18,6 +18,7 @@ import { WhereTheIssProvider } from './src/data/providers/WhereTheIssProvider';
 import { ValidationReport, ValidationService } from './src/data/validation/ValidationService';
 import { Geoposition, ObserverLocation } from './src/domain/models/Geoposition';
 import { PassPrediction } from './src/domain/models/PassPrediction';
+import { SkyChart } from './src/presentation/components/SkyChart';
 import * as satellite from 'satellite.js';
 
 const LOGO_IMG = require('./src/assets/images/logo_fondo_transparente.png');
@@ -277,23 +278,36 @@ export default function App() {
           </View>
 
           {nextPass ? (
-            <View style={styles.passList}>
-              <View style={styles.passItem}>
-                <Text style={styles.passStepLabel}>AOS (Acquisition)</Text>
-                <Text style={styles.passStepTime}>{nextPass.aos.time.toLocaleTimeString()}</Text>
-                <Text style={styles.passStepAngle}>{nextPass.aos.azimuth.toFixed(0)}° Az</Text>
+            <>
+              <View style={styles.passList}>
+                <View style={styles.passItem}>
+                  <Text style={styles.passStepLabel}>AOS (Acquisition)</Text>
+                  <Text style={styles.passStepTime}>{nextPass.aos.time.toLocaleTimeString()}</Text>
+                  <Text style={styles.passStepAngle}>{nextPass.aos.azimuth.toFixed(0)}° Az</Text>
+                </View>
+                <View style={[styles.passItem, styles.passItemCulmination]}>
+                  <Text style={styles.passStepLabelCulmination}>MAX ELEVATION</Text>
+                  <Text style={styles.passStepTimeCulmination}>{nextPass.maxElevation.elevation.toFixed(1)}°</Text>
+                  <Text style={styles.passStepAngleCulmination}>{nextPass.maxElevation.time.toLocaleTimeString()}</Text>
+                </View>
+                <View style={styles.passItem}>
+                  <Text style={styles.passStepLabel}>LOS (Loss)</Text>
+                  <Text style={styles.passStepTime}>{nextPass.los.time.toLocaleTimeString()}</Text>
+                  <Text style={styles.passStepAngle}>{nextPass.los.azimuth.toFixed(0)}° Az</Text>
+                </View>
               </View>
-              <View style={[styles.passItem, styles.passItemCulmination]}>
-                <Text style={styles.passStepLabelCulmination}>MAX ELEVATION</Text>
-                <Text style={styles.passStepTimeCulmination}>{nextPass.maxElevation.elevation.toFixed(1)}°</Text>
-                <Text style={styles.passStepAngleCulmination}>{nextPass.maxElevation.time.toLocaleTimeString()}</Text>
+
+              {/* Polar Sky Chart Rendering (RF-05) */}
+              <View style={{ alignItems: 'center', marginTop: 16 }}>
+                <SkyChart
+                  size={270}
+                  pass={nextPass}
+                  currentAzimuth={lookAngle?.azimuth}
+                  currentElevation={lookAngle?.elevation}
+                  satelliteName={tleInfo?.name}
+                />
               </View>
-              <View style={styles.passItem}>
-                <Text style={styles.passStepLabel}>LOS (Loss)</Text>
-                <Text style={styles.passStepTime}>{nextPass.los.time.toLocaleTimeString()}</Text>
-                <Text style={styles.passStepAngle}>{nextPass.los.azimuth.toFixed(0)}° Az</Text>
-              </View>
-            </View>
+            </>
           ) : (
             <Text style={styles.noPassText}>No visible passes above 10° in the next 72h.</Text>
           )}
