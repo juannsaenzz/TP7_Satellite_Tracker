@@ -1,6 +1,5 @@
 import React, { useEffect, useState, useRef } from 'react';
 import {
-  SafeAreaView,
   ScrollView,
   StatusBar,
   StyleSheet,
@@ -10,6 +9,7 @@ import {
   Image,
   ActivityIndicator,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { theme, colors } from './src/presentation/theme';
 import { Sgp4Engine } from './src/core/orbital/Sgp4Engine';
 import { FootprintService } from './src/core/orbital/FootprintService';
@@ -20,6 +20,9 @@ import { Geoposition, ObserverLocation } from './src/domain/models/Geoposition';
 import { PassPrediction } from './src/domain/models/PassPrediction';
 import { SkyChart } from './src/presentation/components/SkyChart';
 import { SatelliteSearchModal } from './src/presentation/components/SatelliteSearchModal';
+import { WorldMap } from './src/presentation/components/WorldMap';
+import { GroundTrackResult, GroundTrackService } from './src/core/orbital/GroundTrackService';
+import { CatalogService } from './src/core/services/CatalogService';
 import { Satellite } from './src/domain/models/Satellite';
 import * as satellite from 'satellite.js';
 
@@ -53,6 +56,14 @@ export default function App() {
   const [validating, setValidating] = useState(false);
   const [catalogModalVisible, setCatalogModalVisible] = useState(false);
 
+  // Geographic Map state (RF-10, RF-11, RF-12, RF-13)
+  const [groundTrack, setGroundTrack] = useState<GroundTrackResult | null>(null);
+  const [showFootprint, setShowFootprint] = useState(true);
+  const [showConstellation, setShowConstellation] = useState(false);
+  const [constellationPositions, setConstellationPositions] = useState<
+    { noradId: number; name: string; latitude: number; longitude: number }[]
+  >([]);
+
   function handleSelectSatellite(sat: Satellite) {
     try {
       const rec = Sgp4Engine.parseTle(sat.tleLine1, sat.tleLine2);
@@ -61,6 +72,9 @@ export default function App() {
       setTleFetchedAt(sat.updatedAt);
       const period = Sgp4Engine.getOrbitalPeriodMinutes(rec);
       setOrbitalPeriod(period);
+
+      const gt = GroundTrackService.calculateGroundTrack(rec, new Date(), 30);
+      setGroundTrack(gt);
 
       const passes = PassPredictorService.predictPasses(rec, sat.noradId, sat.name, DEFAULT_OBSERVER, {
         startDate: new Date(),
@@ -79,6 +93,40 @@ export default function App() {
     }
   }
 
+  async function handleToggleConstellation() {
+    const nextState = !showConstellation;
+    setShowConstellation(nextState);
+
+    if (nextState && constellationPositions.length === 0) {
+      try {
+        const cat = await CatalogService.loadCategory('starlink');
+        const now = new Date();
+        const positions: { noradId: number; name: string; latitude: number; longitude: number }[] = [];
+
+        // Sample up to 35 Starlink satellites
+        for (const sat of cat.satellites.slice(0, 35)) {
+          try {
+            const r = Sgp4Engine.parseTle(sat.tleLine1, sat.tleLine2);
+            const p = Sgp4Engine.getGeoposition(r, now);
+            if (p) {
+              positions.push({
+                noradId: sat.noradId,
+                name: sat.name,
+                latitude: p.latitude,
+                longitude: p.longitude,
+              });
+            }
+          } catch {
+            // Ignore individual malformed TLE
+          }
+        }
+        setConstellationPositions(positions);
+      } catch (err) {
+        console.error('Failed to load constellation positions:', err);
+      }
+    }
+  }
+
   useEffect(() => {
     async function loadData() {
       setLoading(true);
@@ -94,6 +142,9 @@ export default function App() {
 
           const period = Sgp4Engine.getOrbitalPeriodMinutes(rec);
           setOrbitalPeriod(period);
+
+          const gt = GroundTrackService.calculateGroundTrack(rec, new Date(), 30);
+          setGroundTrack(gt);
 
           const passes = PassPredictorService.predictPasses(rec, 25544, data.name, DEFAULT_OBSERVER, {
             startDate: new Date(),
@@ -241,6 +292,19 @@ export default function App() {
             </View>
           </View>
         </View>
+
+        {/* Interactive World Map (RF-10, RF-11, RF-12, RF-13) */}
+        <WorldMap
+          currentPosition={currentPosition}
+          groundTrack={groundTrack}
+          observer={DEFAULT_OBSERVER}
+          satelliteName={tleInfo?.name}
+          constellationPositions={constellationPositions}
+          showConstellation={showConstellation}
+          showFootprint={showFootprint}
+          onToggleConstellation={handleToggleConstellation}
+          onToggleFootprint={() => setShowFootprint(!showFootprint)}
+        />
 
         {/* Real-time Subsatellite Telemetry Card */}
         <View style={styles.sectionCard}>

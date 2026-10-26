@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import {
   Modal,
-  SafeAreaView,
   View,
   Text,
   TextInput,
@@ -10,6 +9,7 @@ import {
   StyleSheet,
   ActivityIndicator,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { colors } from '../theme/colors';
 import { Satellite, SatelliteCategory } from '../../domain/models/Satellite';
 import { CatalogResult, CatalogService } from '../../core/services/CatalogService';
