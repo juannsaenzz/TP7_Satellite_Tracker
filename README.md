@@ -1,97 +1,123 @@
-This is a new [**React Native**](https://reactnative.dev) project, bootstrapped using [`@react-native-community/cli`](https://github.com/react-native-community/cli).
+# Satellite Tracker — Predictor Orbital SGP4 / SDP4
 
-# Getting Started
+<div align="center">
+  <h3>Aplicación Móvil Nativa de Rastreo Satelital y Predicción de Pases 100% Offline</h3>
+  <p><strong>Licenciatura en Sistemas de Información — Programación Móviles 2026</strong></p>
+</div>
 
-> **Note**: Make sure you have completed the [Set Up Your Environment](https://reactnative.dev/docs/set-up-your-environment) guide before proceeding.
+---
 
-## Step 1: Start Metro
+## 🛰️ Descripción General
 
-First, you will need to run **Metro**, the JavaScript build tool for React Native.
+**Satellite Tracker** es una aplicación móvil nativa desarrollada con **React Native (TypeScript)** que calcula la posición en tiempo real de satélites artificiales en órbita terrestre baja (LEO) y media (MEO) mediante propagación analítica **SGP4 / SDP4** ejecutada **100% de manera local en el dispositivo**.
 
-To start the Metro dev server, run the following command from the root of your React Native project:
+La aplicación opera de forma totalmente autónoma y desconectada, consumiendo datos orbitales (**TLE / OMM**) de fuentes públicas internacionales (**CelesTrak, Space-Track, N2YO, Where The ISS At?**) con almacenamiento en caché persistente y conmutación automática ante fallas.
+
+---
+
+## 🚀 Características Principales
+
+1. **Propagador Orbital Local SGP4/SDP4:**
+   - Cálculo analítico continuo de latitud, longitud y altitud geodésica WGS84 a 1 Hz sin streaming de servidores externos.
+   - Proyección topocéntrica SEZ (Azimut, Elevación y Distancia en línea de vista) calculada respecto de la posición geográfica del observador.
+   - Soporte para formatos estándar de dos líneas (**TLE**) y mensajes modernos **OMM / JSON** del CCSDS para satélites con identificadores NORAD de 6 dígitos.
+2. **Mapa Mundial de Control de Misión (SVG Autónomo):**
+   - Mapa cilíndrico equirrectangular offline generado a partir de cartografía vectorial *Natural Earth 110m* (286 polígonos continentales, 72 KB, sin depender de Google Maps ni claves de API).
+   - Trazado de órbita pasada (punteada violeta) y órbita futura (verde menta continuo) con **resolución e interpolación de discontinuidad en el antimeridiano ($\pm 180^\circ$)**.
+   - Proyección del área de cobertura terrestre (*footprint*) con desdoble geométrico esférico y marcador del observador seleccionado.
+3. **Cálculo y Visualización de Pases (72 Horas):**
+   - Algoritmo de predicción por refinamiento (búsqueda gruesa a 60 s + bisección binaria fina a 1 s de precisión) para detectar instantes de aparición (**AOS**), culminación máxima (**TCA**) y ocultamiento (**LOS**).
+   - **Sky Chart Polar (Radar):** Gráfico polar SVG con círculos concéntricos de elevación ($30^\circ$, $60^\circ$, cenit), puntos cardinales y trayectoria proyectada del pase.
+4. **Notificaciones Locales de Pases Próximos:**
+   - Programación de recordatorios exactos mediante `@notifee/react-native` con antelación configurable antes del AOS.
+5. **Orientación Asistida (Modo Brújula):**
+   - Modal asistido con brújula magnética que sincroniza el magnetómetro del dispositivo con el azimut y elevación objetivo, indicando con una mira de alineación activa cuando el satélite se encuentra en campo de visión (< 5° de error).
+6. **Módulo de Validación Cruzada en Tiempo Real:**
+   - Comparación instantánea contra coordenadas independientes de *Where The ISS At? API* y *N2YO*, calculando error euclidiano tridimensional ECEF, error en superficie y delta de altitud con verificación de tolerancia (< 5.0 km).
+7. **Diseño Visual de Alto Impacto:**
+   - Paleta cósmica oscura de alto contraste (`#0A051B`, `#160B33`, `#8B5CF6`, `#00E5FF`, `#22C55E`, `#FFB845`), tipografía geométrica estilizada, iconografía vectorial SVG y cero emojis en la interfaz.
+
+---
+
+## 🏛️ Arquitectura del Software
+
+El proyecto sigue una arquitectura limpia en capas desacopladas:
+
+```
+src/
+├── core/                   # Núcleo de cálculo científico y servicios centrales
+│   ├── orbital/            # Motor SGP4, GroundTrackService, FootprintService, PassPredictorService
+│   ├── sensors/            # CompassService (sensores magnetómetro/giroscopio)
+│   ├── notifications/      # NotificationService (alarmas Notifee)
+│   └── services/           # CatalogService (orquestador multi-proveedor)
+├── data/                   # Capa de acceso a datos e infraestructura
+│   ├── providers/          # CelesTrakProvider, SpaceTrackProvider, N2yoProvider, WhereTheIssProvider
+│   ├── cache/              # OrbitalCacheService (persistencia AsyncStorage con TTL 24h)
+│   └── validation/         # ValidationService (cálculo de distancias 3D ECEF)
+├── domain/                 # Entidades y contratos de dominio
+│   ├── models/             # Satellite, Geoposition, LookAngle, PassPrediction
+│   └── repositories/       # IDataProvider (interfaz común)
+└── presentation/           # Interfaz de usuario (React Native)
+    ├── components/         # WorldMap, SkyChart, CompassModal, SatelliteSearchModal
+    └── theme/              # Paleta de colores cósmica y tokens de diseño
+```
+
+---
+
+## 📑 Documentación Técnica de Entrega
+
+El proyecto incluye la documentación técnica exigida por la Sección 6 del PRD:
+
+- 📘 [Documento Técnico de Propagación y Geometría](docs/documento_tecnico.md): Fundamentos de astrodinámica, transformaciones TEME $\rightarrow$ ECEF $\rightarrow$ Geodésico $\rightarrow$ Topocéntrico SEZ, algoritmos de antimeridiano y limitaciones físicas de SGP4.
+- 📊 [Informe de Validación y Precisión Orbital](docs/informe_validacion.md): Tabla comparativa empírica de 10 muestras temporales contra *Where The ISS At?*, descomposición de error en superficie y altitud, y curva de degradación según la antigüedad del TLE.
+- 🛰️ [Decisiones de Fuentes de Datos y Estrategia de Caché](docs/decisiones_fuentes_datos.md): Comparativa CelesTrak / Space-Track / N2YO / Where The ISS At?, justificación técnica de **Starlink SupGP** derivado de efemérides del operador frente a TLEs de radar balísticos, y diseño de la cascada de conmutación ante caídas.
+
+---
+
+## 🧪 Pruebas Unitarias
+
+La suite de tests unitarios desarrollada con Jest cubre todos los módulos matemáticos y de infraestructura:
 
 ```sh
-# Using npm
+npm test
+```
+
+```
+PASS  __tests__/OrbitalEngine.test.ts
+PASS  __tests__/SkyChartProjection.test.ts
+PASS  __tests__/CompassService.test.ts
+PASS  __tests__/NotificationService.test.ts
+PASS  __tests__/CatalogService.test.ts
+PASS  __tests__/WorldMap.test.ts
+PASS  __tests__/DataProviders.test.ts
+PASS  __tests__/App.test.tsx
+
+Test Suites: 8 passed, 8 total
+Tests:       31 passed, 31 total
+```
+
+---
+
+## 📲 Instalación y Ejecución
+
+### Prerrequisitos
+- Node.js >= 18
+- JDK 17
+- Android SDK (API 34+)
+
+### 1. Servidor de Desarrollo Metro (Wi-Fi)
+```sh
 npm start
-
-# OR using Yarn
-yarn start
 ```
 
-## Step 2: Build and run your app
-
-With Metro running, open a new terminal window/pane from the root of your React Native project, and use one of the following commands to build and run your Android or iOS app:
-
-### Android
-
+### 2. Ejecutar en Dispositivo Android
 ```sh
-# Using npm
 npm run android
-
-# OR using Yarn
-yarn android
 ```
 
-### iOS
-
-For iOS, remember to install CocoaPods dependencies (this only needs to be run on first clone or after updating native deps).
-
-The first time you create a new project, run the Ruby bundler to install CocoaPods itself:
-
+### 3. Compilación de APK Standalone
 ```sh
-bundle install
+cd android
+./gradlew assembleDebug
 ```
-
-Then, and every time you update your native dependencies, run:
-
-```sh
-bundle exec pod install
-```
-
-For more information, please visit [CocoaPods Getting Started guide](https://guides.cocoapods.org/using/getting-started.html).
-
-```sh
-# Using npm
-npm run ios
-
-# OR using Yarn
-yarn ios
-```
-
-If everything is set up correctly, you should see your new app running in the Android Emulator, iOS Simulator, or your connected device.
-
-This is one way to run your app — you can also build it directly from Android Studio or Xcode.
-
-## Step 3: Modify your app
-
-Now that you have successfully run the app, let's make changes!
-
-Open `App.tsx` in your text editor of choice and make some changes. When you save, your app will automatically update and reflect these changes — this is powered by [Fast Refresh](https://reactnative.dev/docs/fast-refresh).
-
-When you want to forcefully reload, for example to reset the state of your app, you can perform a full reload:
-
-- **Android**: Press the <kbd>R</kbd> key twice or select **"Reload"** from the **Dev Menu**, accessed via <kbd>Ctrl</kbd> + <kbd>M</kbd> (Windows/Linux) or <kbd>Cmd ⌘</kbd> + <kbd>M</kbd> (macOS).
-- **iOS**: Press <kbd>R</kbd> in iOS Simulator.
-
-## Congratulations! :tada:
-
-You've successfully run and modified your React Native App. :partying_face:
-
-### Now what?
-
-- If you want to add this new React Native code to an existing application, check out the [Integration guide](https://reactnative.dev/docs/integration-with-existing-apps).
-- If you're curious to learn more about React Native, check out the [docs](https://reactnative.dev/docs/getting-started).
-
-# Troubleshooting
-
-If you're having issues getting the above steps to work, see the [Troubleshooting](https://reactnative.dev/docs/troubleshooting) page.
-
-# Learn More
-
-To learn more about React Native, take a look at the following resources:
-
-- [React Native Website](https://reactnative.dev) - learn more about React Native.
-- [Getting Started](https://reactnative.dev/docs/environment-setup) - an **overview** of React Native and how setup your environment.
-- [Learn the Basics](https://reactnative.dev/docs/getting-started) - a **guided tour** of the React Native **basics**.
-- [Blog](https://reactnative.dev/blog) - read the latest official React Native **Blog** posts.
-- [`@facebook/react-native`](https://github.com/facebook/react-native) - the Open Source; GitHub **repository** for React Native.
+El archivo APK autónomo se genera en `android/app/build/outputs/apk/debug/app-debug.apk`.
