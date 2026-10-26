@@ -98,4 +98,29 @@ describe('Orbital Engine Unit Tests', () => {
       expect(firstPass.trajectory.length).toBeGreaterThan(2);
     }
   });
+
+  it('parses CCSDS OMM/JSON format supporting 6-digit catalog IDs', () => {
+    const ommSample = {
+      OBJECT_NAME: 'ISS (ZARYA)',
+      OBJECT_ID: '1998-067A',
+      EPOCH: '2024-080.52840278',
+      MEAN_MOTION: 15.49880145,
+      ECCENTRICITY: 0.0004547,
+      INCLINATION: 51.6418,
+      RA_OF_ASC_NODE: 50.9328,
+      ARG_OF_PERICENTER: 348.6533,
+      MEAN_ANOMALY: 133.4542,
+      BSTAR: 0.00026653,
+      MEAN_MOTION_DOT: 0.00014674,
+      NORAD_CAT_ID: 125544, // 6-digit modern catalog ID
+    };
+
+    const satrec = Sgp4Engine.parseOmm(ommSample);
+    expect(satrec).toBeDefined();
+    expect(satrec.error).toBe(0);
+    const period = Sgp4Engine.getOrbitalPeriodMinutes(satrec);
+    expect(period).toBeGreaterThan(90);
+    expect(period).toBeLessThan(95);
+  });
 });
+

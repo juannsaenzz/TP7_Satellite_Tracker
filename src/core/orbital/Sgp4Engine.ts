@@ -17,6 +17,18 @@ export class Sgp4Engine {
   }
 
   /**
+   * Parses CCSDS Orbit Mean-Elements Message (OMM) JSON object into a SatRec.
+   * Enables support for modern 6-digit NORAD catalog numbers exceeding 5-digit TLE limits.
+   */
+  public static parseOmm(ommJson: Record<string, any>): satellite.SatRec {
+    const satrec = (satellite as any).json2satrec(ommJson);
+    if (!satrec || satrec.error) {
+      throw new Error(`Failed to parse OMM JSON with error code: ${satrec?.error || 'UNKNOWN'}`);
+    }
+    return satrec;
+  }
+
+  /**
    * Computes the orbital period of the satellite in minutes.
    */
   public static getOrbitalPeriodMinutes(satrec: satellite.SatRec): number {
