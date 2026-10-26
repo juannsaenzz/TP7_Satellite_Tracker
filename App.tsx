@@ -19,6 +19,8 @@ import { ValidationReport, ValidationService } from './src/data/validation/Valid
 import { Geoposition, ObserverLocation } from './src/domain/models/Geoposition';
 import { PassPrediction } from './src/domain/models/PassPrediction';
 import { SkyChart } from './src/presentation/components/SkyChart';
+import { SatelliteSearchModal } from './src/presentation/components/SatelliteSearchModal';
+import { Satellite } from './src/domain/models/Satellite';
 import * as satellite from 'satellite.js';
 
 const LOGO_IMG = require('./src/assets/images/logo_fondo_transparente.png');
@@ -49,6 +51,33 @@ export default function App() {
   // Validation state
   const [validation, setValidation] = useState<ValidationReport | null>(null);
   const [validating, setValidating] = useState(false);
+  const [catalogModalVisible, setCatalogModalVisible] = useState(false);
+
+  function handleSelectSatellite(sat: Satellite) {
+    try {
+      const rec = Sgp4Engine.parseTle(sat.tleLine1, sat.tleLine2);
+      setSatrec(rec);
+      setTleInfo({ line1: sat.tleLine1, line2: sat.tleLine2, name: sat.name });
+      setTleFetchedAt(sat.updatedAt);
+      const period = Sgp4Engine.getOrbitalPeriodMinutes(rec);
+      setOrbitalPeriod(period);
+
+      const passes = PassPredictorService.predictPasses(rec, sat.noradId, sat.name, DEFAULT_OBSERVER, {
+        startDate: new Date(),
+        daysAhead: 3,
+        minElevationDeg: 10,
+      });
+      setNextPass(passes.length > 0 ? passes[0] : null);
+
+      if (sat.noradId === 25544) {
+        runValidation(sat.tleLine1, sat.tleLine2, sat.updatedAt);
+      } else {
+        setValidation(null);
+      }
+    } catch (err) {
+      console.error('Error switching satellite:', err);
+    }
+  }
 
   useEffect(() => {
     async function loadData() {
@@ -151,10 +180,15 @@ export default function App() {
           </View>
         </View>
 
-        <View style={styles.tokenPill}>
+        <TouchableOpacity
+          style={styles.tokenPill}
+          onPress={() => setCatalogModalVisible(true)}
+          activeOpacity={0.7}>
           <Text style={styles.tokenStar}>★</Text>
-          <Text style={styles.tokenText}>NORAD: 25544</Text>
-        </View>
+          <Text style={styles.tokenText}>
+            {tleInfo ? `NORAD: ${tleInfo.line2.substring(2, 7).trim()}` : 'CATALOG'} ▾
+          </Text>
+        </TouchableOpacity>
       </View>
 
       {/* Category Pills (Figma style: All, ISS, Starlink, GPS...) */}
@@ -165,7 +199,10 @@ export default function App() {
             return (
               <TouchableOpacity
                 key={cat}
-                onPress={() => setSelectedCategory(cat)}
+                onPress={() => {
+                  setSelectedCategory(cat);
+                  setCatalogModalVisible(true);
+                }}
                 style={[styles.categoryPill, isSelected && styles.categoryPillActive]}>
                 <Text style={[styles.categoryText, isSelected && styles.categoryTextActive]}>{cat}</Text>
               </TouchableOpacity>
@@ -178,14 +215,15 @@ export default function App() {
         {/* Main Target Banner Card (Figma deep purple card) */}
         <View style={styles.mainCard}>
           <View style={styles.cardHeader}>
-            <View>
+            <View style={{ flex: 1, marginRight: 8 }}>
               <Text style={styles.targetLabel}>TARGET SATELLITE</Text>
-              <Text style={styles.targetName}>{tleInfo?.name || 'ISS (ZARYA)'}</Text>
+              <Text style={styles.targetName} numberOfLines={1}>{tleInfo?.name || 'ISS (ZARYA)'}</Text>
             </View>
-            <View style={styles.statusBadge}>
-              <View style={styles.liveDot} />
-              <Text style={styles.statusBadgeText}>SGP4 PROPAGATING</Text>
-            </View>
+            <TouchableOpacity
+              style={styles.changeTargetButton}
+              onPress={() => setCatalogModalVisible(true)}>
+              <Text style={styles.changeTargetText}>CHANGE ▾</Text>
+            </TouchableOpacity>
           </View>
 
           <View style={styles.cardStatsGrid}>
@@ -384,6 +422,14 @@ export default function App() {
           <Text style={styles.navText}>Config</Text>
         </TouchableOpacity>
       </View>
+
+      {/* Satellite Catalog & Constellation Search Modal (RF-01, RF-08) */}
+      <SatelliteSearchModal
+        visible={catalogModalVisible}
+        onClose={() => setCatalogModalVisible(false)}
+        onSelectSatellite={handleSelectSatellite}
+        currentNoradId={tleInfo ? parseInt(tleInfo.line2.substring(2, 7).trim(), 10) : 25544}
+      />
     </SafeAreaView>
   );
 }
@@ -512,6 +558,20 @@ const styles = StyleSheet.create({
     fontSize: 22,
     fontWeight: '800',
     marginTop: 2,
+  },
+  changeTargetButton: {
+    backgroundColor: colors.surface,
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: colors.accentGold,
+  },
+  changeTargetText: {
+    color: colors.accentGold,
+    fontSize: 10,
+    fontWeight: '800',
+    letterSpacing: 0.5,
   },
   statusBadge: {
     flexDirection: 'row',
