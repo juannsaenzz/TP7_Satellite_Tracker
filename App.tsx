@@ -21,6 +21,7 @@ import { PassPrediction } from './src/domain/models/PassPrediction';
 import { SkyChart } from './src/presentation/components/SkyChart';
 import { SatelliteSearchModal } from './src/presentation/components/SatelliteSearchModal';
 import { WorldMap } from './src/presentation/components/WorldMap';
+import { CompassModal } from './src/presentation/components/CompassModal';
 import { GroundTrackResult, GroundTrackService } from './src/core/orbital/GroundTrackService';
 import { CatalogService } from './src/core/services/CatalogService';
 import { Satellite } from './src/domain/models/Satellite';
@@ -55,6 +56,7 @@ export default function App() {
   const [validation, setValidation] = useState<ValidationReport | null>(null);
   const [validating, setValidating] = useState(false);
   const [catalogModalVisible, setCatalogModalVisible] = useState(false);
+  const [compassModalVisible, setCompassModalVisible] = useState(false);
 
   // Geographic Map state (RF-10, RF-11, RF-12, RF-13)
   const [groundTrack, setGroundTrack] = useState<GroundTrackResult | null>(null);
@@ -368,6 +370,14 @@ export default function App() {
               </Text>
             </View>
           </View>
+
+          {/* Assisted Pointer Button (RF-07) */}
+          <TouchableOpacity
+            style={styles.openCompassButton}
+            onPress={() => setCompassModalVisible(true)}
+            activeOpacity={0.8}>
+            <Text style={styles.openCompassText}>🧭 OPEN SKY POINTER (COMPASS MODE RF-07)</Text>
+          </TouchableOpacity>
         </View>
 
         {/* Pass Prediction Card (AOS, Culmination, LOS) */}
@@ -471,9 +481,9 @@ export default function App() {
           <Text style={[styles.navText, activeTab === 'passes' && styles.navTextActive]}>Passes</Text>
         </TouchableOpacity>
 
-        {/* Center Floating Action Button */}
-        <TouchableOpacity style={styles.centerFab} onPress={() => runValidation()}>
-          <Text style={styles.centerFabIcon}>▶</Text>
+        {/* Center Floating Action Button (Compass Mode) */}
+        <TouchableOpacity style={styles.centerFab} onPress={() => setCompassModalVisible(true)}>
+          <Text style={styles.centerFabIcon}>🧭</Text>
         </TouchableOpacity>
 
         <TouchableOpacity style={styles.navItem} onPress={() => setActiveTab('validate')}>
@@ -493,6 +503,15 @@ export default function App() {
         onClose={() => setCatalogModalVisible(false)}
         onSelectSatellite={handleSelectSatellite}
         currentNoradId={tleInfo ? parseInt(tleInfo.line2.substring(2, 7).trim(), 10) : 25544}
+      />
+
+      {/* Assisted Orientation / Compass Mode Modal (RF-07) */}
+      <CompassModal
+        visible={compassModalVisible}
+        onClose={() => setCompassModalVisible(false)}
+        targetLookAngle={lookAngle}
+        satelliteName={tleInfo?.name}
+        noradId={tleInfo ? parseInt(tleInfo.line2.substring(2, 7).trim(), 10) : 25544}
       />
     </SafeAreaView>
   );
@@ -771,6 +790,21 @@ const styles = StyleSheet.create({
     fontSize: 13,
     fontWeight: '700',
     marginTop: 4,
+  },
+  openCompassButton: {
+    backgroundColor: colors.surface,
+    paddingVertical: 10,
+    borderRadius: 10,
+    alignItems: 'center',
+    marginTop: 10,
+    borderWidth: 1,
+    borderColor: colors.accentGold,
+  },
+  openCompassText: {
+    color: colors.accentGold,
+    fontSize: 11,
+    fontWeight: '800',
+    letterSpacing: 0.5,
   },
   passDurationBadge: {
     color: colors.accentGold,
