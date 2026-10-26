@@ -1,24 +1,20 @@
 import React, { useMemo } from 'react';
 import { View, StyleSheet, Text, TouchableOpacity } from 'react-native';
-import MapView, { Marker, Polyline, Polygon } from 'react-native-maps';
+import Svg, {
+  Path,
+  Rect,
+  Circle,
+  Line,
+  Text as SvgText,
+  Polygon as SvgPolygon,
+  Polyline as SvgPolyline,
+  G,
+} from 'react-native-svg';
 import { colors } from '../theme/colors';
 import { Geoposition, ObserverLocation } from '../../domain/models/Geoposition';
 import { GroundTrackResult } from '../../core/orbital/GroundTrackService';
 import { FootprintService } from '../../core/orbital/FootprintService';
-
-// Sleek dark cosmic Google Maps theme JSON
-const DARK_MAP_STYLE = [
-  { elementType: 'geometry', stylers: [{ color: '#0F0621' }] },
-  { elementType: 'labels.text.stroke', stylers: [{ color: '#0F0621' }] },
-  { elementType: 'labels.text.fill', stylers: [{ color: '#9F9F9F' }] },
-  { featureType: 'administrative.locality', elementType: 'labels.text.fill', stylers: [{ color: '#FFB845' }] },
-  { featureType: 'poi', stylers: [{ visibility: 'off' }] },
-  { featureType: 'road', elementType: 'geometry', stylers: [{ color: '#201149' }] },
-  { featureType: 'road', elementType: 'labels', stylers: [{ visibility: 'off' }] },
-  { featureType: 'transit', stylers: [{ visibility: 'off' }] },
-  { featureType: 'water', elementType: 'geometry', stylers: [{ color: '#070212' }] },
-  { featureType: 'water', elementType: 'labels.text.fill', stylers: [{ color: '#483573' }] },
-];
+import { WORLD_CONTINENTS_SVG_PATH } from './WorldCoastlines';
 
 interface WorldMapProps {
   currentPosition: Geoposition | null;
@@ -44,101 +40,170 @@ export const WorldMap: React.FC<WorldMapProps> = ({
   onToggleFootprint,
 }) => {
   // Generate footprint polygon coordinates
-  const footprintCoords = useMemo(() => {
-    if (!currentPosition || !showFootprint) return [];
-    return FootprintService.generateFootprintPolygon(
+  const footprintPoints = useMemo(() => {
+    if (!currentPosition || !showFootprint) return '';
+    const coords = FootprintService.generateFootprintPolygon(
       currentPosition.latitude,
       currentPosition.longitude,
       currentPosition.altitude,
-      10, // 10° elevation mask
-      48
+      10,
+      36
     );
+    return coords
+      .map(p => `${(p.longitude + 180).toFixed(1)},${(90 - p.latitude).toFixed(1)}`)
+      .join(' ');
   }, [currentPosition, showFootprint]);
 
-  const initialRegion = {
-    latitude: currentPosition ? currentPosition.latitude : 0,
-    longitude: currentPosition ? currentPosition.longitude : 0,
-    latitudeDelta: 70,
-    longitudeDelta: 70,
-  };
+  // Project observer
+  const obsX = Math.max(0, Math.min(360, observer.longitude + 180));
+  const obsY = Math.max(0, Math.min(180, 90 - observer.latitude));
+
+  // Project satellite
+  const satX = currentPosition
+    ? Math.max(0, Math.min(360, currentPosition.longitude + 180))
+    : 180;
+  const satY = currentPosition
+    ? Math.max(0, Math.min(180, 90 - currentPosition.latitude))
+    : 90;
 
   return (
     <View style={styles.container}>
-      <MapView
-        style={styles.map}
-        initialRegion={initialRegion}
-        customMapStyle={DARK_MAP_STYLE}
-        showsCompass={false}
-        showsScale={true}>
-        {/* Footprint Coverage Area (RF-12) */}
-        {footprintCoords.length > 0 && (
-          <Polygon
-            coordinates={footprintCoords}
-            fillColor="rgba(114, 65, 248, 0.22)"
-            strokeColor={colors.primary}
-            strokeWidth={1.5}
+      <Svg viewBox="0 0 360 180" style={styles.svgMap}>
+        {/* Ocean Background */}
+        <Rect x="0" y="0" width="360" height="180" fill="#0C071F" />
+
+        {/* Coordinate Grid: Latitude & Longitude */}
+        <G stroke="#221245" strokeWidth="0.6" strokeDasharray="3,3">
+          {/* Equator & Prime Meridian */}
+          <Line x1="0" y1="90" x2="360" y2="90" stroke="#36206B" strokeWidth="0.8" />
+          <Line x1="180" y1="0" x2="180" y2="180" stroke="#36206B" strokeWidth="0.8" />
+          {/* Tropics */}
+          <Line x1="0" y1="66.5" x2="360" y2="66.5" />
+          <Line x1="0" y1="113.5" x2="360" y2="113.5" />
+          {/* Meridians */}
+          <Line x1="90" y1="0" x2="90" y2="180" />
+          <Line x1="270" y1="0" x2="270" y2="180" />
+        </G>
+
+        {/* Continents and Landmasses */}
+        <Path
+          d={WORLD_CONTINENTS_SVG_PATH}
+          fill="#1C1138"
+          stroke="#39246B"
+          strokeWidth="0.6"
+        />
+
+        {/* Footprint Coverage Area */}
+        {showFootprint && footprintPoints !== '' && (
+          <SvgPolygon
+            points={footprintPoints}
+            fill="rgba(114, 65, 248, 0.22)"
+            stroke="#8B5CF6"
+            strokeWidth="0.8"
           />
         )}
 
-        {/* Past Ground Track Segments (Split at Antimeridian) (RF-11) */}
-        {groundTrack?.pastSegments.map((segment, idx) => (
-          <Polyline
-            key={`past-${idx}`}
-            coordinates={segment}
-            strokeColor="rgba(114, 65, 248, 0.65)"
-            strokeWidth={2}
-            lineDashPattern={[6, 4]}
-          />
-        ))}
+        {/* Past Ground Track Segments */}
+        {groundTrack?.pastSegments.map((segment, idx) => {
+          const pts = segment
+            .map(p => `${(p.longitude + 180).toFixed(1)},${(90 - p.latitude).toFixed(1)}`)
+            .join(' ');
+          return (
+            <SvgPolyline
+              key={`past-${idx}`}
+              points={pts}
+              stroke="rgba(114, 65, 248, 0.75)"
+              strokeWidth="1.6"
+              strokeDasharray="4,3"
+            />
+          );
+        })}
 
-        {/* Future Ground Track Segments (Split at Antimeridian) (RF-11) */}
-        {groundTrack?.futureSegments.map((segment, idx) => (
-          <Polyline
-            key={`future-${idx}`}
-            coordinates={segment}
-            strokeColor={colors.accentMint}
-            strokeWidth={2.5}
-          />
-        ))}
+        {/* Future Ground Track Segments */}
+        {groundTrack?.futureSegments.map((segment, idx) => {
+          const pts = segment
+            .map(p => `${(p.longitude + 180).toFixed(1)},${(90 - p.latitude).toFixed(1)}`)
+            .join(' ');
+          return (
+            <SvgPolyline
+              key={`future-${idx}`}
+              points={pts}
+              stroke={colors.accentMint}
+              strokeWidth="2.2"
+            />
+          );
+        })}
 
-        {/* Constellation Layer Dots (RF-13) */}
+        {/* Constellation Layer Dots */}
         {showConstellation &&
           constellationPositions.map(sat => (
-            <Marker
+            <Circle
               key={`const-${sat.noradId}`}
-              coordinate={{ latitude: sat.latitude, longitude: sat.longitude }}
-              tracksViewChanges={false}>
-              <View style={styles.constellationDot} />
-            </Marker>
+              cx={Math.max(0, Math.min(360, sat.longitude + 180))}
+              cy={Math.max(0, Math.min(180, 90 - sat.latitude))}
+              r="1.8"
+              fill={colors.accentGold}
+            />
           ))}
 
-        {/* Observer Location Marker */}
-        <Marker coordinate={{ latitude: observer.latitude, longitude: observer.longitude }}>
-          <View style={styles.observerPinOuter}>
-            <View style={styles.observerPinInner} />
-          </View>
-        </Marker>
+        {/* Observer Location Pin (Buenos Aires) */}
+        <G>
+          <Circle
+            cx={obsX}
+            cy={obsY}
+            r="4.5"
+            fill="rgba(255, 184, 69, 0.3)"
+            stroke={colors.accentGold}
+            strokeWidth="0.8"
+          />
+          <Circle cx={obsX} cy={obsY} r="1.8" fill={colors.accentGold} />
+          <SvgText
+            x={obsX + 4}
+            y={obsY + 2}
+            fill={colors.accentGold}
+            fontSize="5.5"
+            fontWeight="bold">
+            Buenos Aires
+          </SvgText>
+        </G>
 
-        {/* Target Satellite Marker (RF-10) */}
+        {/* Target Satellite Marker with Pulse & Label */}
         {currentPosition && (
-          <Marker
-            coordinate={{ latitude: currentPosition.latitude, longitude: currentPosition.longitude }}
-            title={satelliteName}
-            description={`Alt: ${currentPosition.altitude.toFixed(1)} km`}>
-            <View style={styles.satelliteMarker}>
-              <View style={styles.markerPulse} />
-              <View style={styles.markerCenter}>
-                <View style={styles.satelliteCoreDot} />
-              </View>
-              <View style={styles.markerLabelContainer}>
-                <Text style={styles.markerLabelText} numberOfLines={1}>
-                  {satelliteName}
-                </Text>
-              </View>
-            </View>
-          </Marker>
+          <G>
+            {/* Pulse outer ring */}
+            <Circle
+              cx={satX}
+              cy={satY}
+              r="6.5"
+              fill="rgba(0, 229, 255, 0.25)"
+              stroke="#00E5FF"
+              strokeWidth="0.8"
+            />
+            {/* Satellite core */}
+            <Circle cx={satX} cy={satY} r="2.8" fill="#00E5FF" />
+            {/* Satellite label tag */}
+            <Rect
+              x={satX - 16}
+              y={satY - 13}
+              width="32"
+              height="8"
+              rx="2.5"
+              fill="rgba(15, 6, 33, 0.9)"
+              stroke="#00E5FF"
+              strokeWidth="0.5"
+            />
+            <SvgText
+              x={satX}
+              y={satY - 7.5}
+              fill="#FFFFFF"
+              fontSize="4.8"
+              fontWeight="bold"
+              textAnchor="middle">
+              {satelliteName.substring(0, 10).toUpperCase()}
+            </SvgText>
+          </G>
         )}
-      </MapView>
+      </Svg>
 
       {/* Map Control Floating Badges */}
       <View style={styles.controlsOverlay}>
@@ -157,7 +222,8 @@ export const WorldMap: React.FC<WorldMapProps> = ({
           {onToggleFootprint && (
             <TouchableOpacity
               style={[styles.toggleButton, showFootprint && styles.toggleButtonActive]}
-              onPress={onToggleFootprint}>
+              onPress={onToggleFootprint}
+              activeOpacity={0.7}>
               <Text style={[styles.toggleText, showFootprint && styles.toggleTextActive]}>
                 Huella
               </Text>
@@ -167,7 +233,8 @@ export const WorldMap: React.FC<WorldMapProps> = ({
           {onToggleConstellation && (
             <TouchableOpacity
               style={[styles.toggleButton, showConstellation && styles.toggleButtonActive]}
-              onPress={onToggleConstellation}>
+              onPress={onToggleConstellation}
+              activeOpacity={0.7}>
               <Text style={[styles.toggleText, showConstellation && styles.toggleTextActive]}>
                 Constelación
               </Text>
@@ -181,81 +248,18 @@ export const WorldMap: React.FC<WorldMapProps> = ({
 
 const styles = StyleSheet.create({
   container: {
-    height: 320,
+    height: 240,
     borderRadius: 18,
     overflow: 'hidden',
-    backgroundColor: colors.background,
+    backgroundColor: '#0C071F',
     borderWidth: 1,
     borderColor: colors.cardBorder,
     marginBottom: 14,
+    position: 'relative',
   },
-  map: {
-    ...StyleSheet.absoluteFill,
-  },
-  satelliteMarker: {
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  markerPulse: {
-    position: 'absolute',
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    backgroundColor: 'rgba(0, 229, 255, 0.25)',
-  },
-  markerCenter: {
-    width: 24,
-    height: 24,
-    borderRadius: 12,
-    backgroundColor: colors.surface,
-    borderWidth: 1.5,
-    borderColor: '#00E5FF',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  satelliteCoreDot: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-    backgroundColor: '#00E5FF',
-  },
-  markerLabelContainer: {
-    backgroundColor: colors.surface,
-    paddingHorizontal: 6,
-    paddingVertical: 2,
-    borderRadius: 6,
-    marginTop: 2,
-    borderWidth: 1,
-    borderColor: colors.cardBorder,
-  },
-  markerLabelText: {
-    color: colors.textPrimary,
-    fontSize: 9,
-    fontWeight: '800',
-  },
-  observerPinOuter: {
-    width: 14,
-    height: 14,
-    borderRadius: 7,
-    backgroundColor: 'rgba(255, 184, 69, 0.35)',
-    borderWidth: 1.5,
-    borderColor: colors.accentGold,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  observerPinInner: {
-    width: 6,
-    height: 6,
-    borderRadius: 3,
-    backgroundColor: colors.accentGold,
-  },
-  constellationDot: {
-    width: 6,
-    height: 6,
-    borderRadius: 3,
-    backgroundColor: colors.accentGold,
-    borderWidth: 1,
-    borderColor: '#FFFFFF',
+  svgMap: {
+    width: '100%',
+    height: '100%',
   },
   controlsOverlay: {
     position: 'absolute',
@@ -268,9 +272,9 @@ const styles = StyleSheet.create({
     pointerEvents: 'box-none',
   },
   trackLegend: {
-    backgroundColor: 'rgba(15, 6, 33, 0.85)',
+    backgroundColor: 'rgba(15, 6, 33, 0.88)',
     paddingHorizontal: 8,
-    paddingVertical: 6,
+    paddingVertical: 5,
     borderRadius: 8,
     borderWidth: 1,
     borderColor: colors.cardBorder,
@@ -278,7 +282,7 @@ const styles = StyleSheet.create({
   legendRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginVertical: 2,
+    marginVertical: 1.5,
   },
   legendBar: {
     width: 14,
@@ -296,7 +300,7 @@ const styles = StyleSheet.create({
   },
   toggleButton: {
     backgroundColor: 'rgba(32, 17, 73, 0.85)',
-    paddingHorizontal: 8,
+    paddingHorizontal: 9,
     paddingVertical: 5,
     borderRadius: 8,
     borderWidth: 1,
