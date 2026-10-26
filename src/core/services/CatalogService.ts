@@ -1,6 +1,9 @@
 import { Satellite, SatelliteCategory } from '../../domain/models/Satellite';
+import { Geoposition } from '../../domain/models/Geoposition';
 import { CelesTrakProvider } from '../../data/providers/CelesTrakProvider';
 import { WhereTheIssProvider } from '../../data/providers/WhereTheIssProvider';
+import { SpaceTrackProvider } from '../../data/providers/SpaceTrackProvider';
+import { N2yoProvider } from '../../data/providers/N2yoProvider';
 import { OrbitalCacheService } from '../../data/cache/OrbitalCacheService';
 
 export interface CatalogResult {
@@ -11,8 +14,10 @@ export interface CatalogResult {
 }
 
 export class CatalogService {
-  private static readonly celestrak = new CelesTrakProvider();
-  private static readonly whereTheIss = new WhereTheIssProvider();
+  public static readonly celestrak = new CelesTrakProvider();
+  public static readonly whereTheIss = new WhereTheIssProvider();
+  public static readonly spaceTrack = new SpaceTrackProvider();
+  public static readonly n2yo = new N2yoProvider();
 
   // Curated prominent satellites for instantaneous zero-latency offline start
   public static readonly DEFAULT_SATELLITES: Satellite[] = [
@@ -146,5 +151,74 @@ export class CatalogService {
       const idMatches = hasNumericId && sat.noradId.toString().includes(trimmed);
       return nameMatches || idMatches;
     });
+  }
+
+  /**
+   * Fetches fresh TLE for a specific NORAD ID using multi-provider fallback chain (RF-09 & RF-14).
+   * Hierarchy: CelesTrak -> Space-Track -> N2YO -> Curated bundled default.
+   */
+  public static async getOrbitalDataWithFallback(
+    noradId: number
+  ): Promise<{ line1: string; line2: string; name: string } | null> {
+    // 1. Primary: CelesTrak
+    try {
+      const data = await this.celestrak.getOrbitalData(noradId);
+      if (data) return data;
+    } catch {
+      // Primary failed, continue to fallback
+    }
+
+    // 2. Secondary: Space-Track (if credentials configured)
+    if (this.spaceTrack.hasCredentials()) {
+      try {
+        const data = await this.spaceTrack.getOrbitalData(noradId);
+        if (data) return data;
+      } catch {
+        // Space-Track failed, continue to next fallback
+      }
+    }
+
+    // 3. Tertiary: N2YO (if API key configured)
+    if (this.n2yo.getApiKey()) {
+      try {
+        const data = await this.n2yo.getOrbitalData(noradId);
+        if (data) return data;
+      } catch {
+        // N2YO failed
+      }
+    }
+
+    // 4. Final: Bundled default satellites
+    const def = this.DEFAULT_SATELLITES.find(s => s.noradId === noradId);
+    if (def) {
+      return {
+        line1: def.tleLine1,
+        line2: def.tleLine2,
+        name: def.name,
+      };
+    }
+
+    return null;
+  }
+
+  /**
+   * Fetches independent ground-truth position for cross-validation (RF-15 & RF-16).
+   * Supports Where The ISS At? (default, no API key needed) and N2YO.
+   */
+  public static async getValidationPosition(
+    noradId: number,
+    preferredSource: 'wheretheiss' | 'n2yo' = 'wheretheiss'
+  ): Promise<Geoposition | null> {
+    if (preferredSource === 'n2yo' && this.n2yo.getApiKey()) {
+      const pos = await this.n2yo.getValidationPosition(noradId);
+      if (pos) return pos;
+    }
+
+    // Fallback to Where The ISS At? for station (NORAD 25544)
+    if (noradId === 25544 || preferredSource === 'wheretheiss') {
+      return await this.whereTheIss.getValidationPosition(noradId);
+    }
+
+    return null;
   }
 }
