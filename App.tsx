@@ -391,6 +391,7 @@ export default function App() {
               currentPosition={currentPosition}
               groundTrack={groundTrack}
               observer={observer}
+              observerName={selectedCityName}
               satelliteName={tleInfo?.name}
               constellationPositions={constellationPositions}
               showConstellation={showConstellation}

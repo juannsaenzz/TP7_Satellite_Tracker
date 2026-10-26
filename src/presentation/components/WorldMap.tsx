@@ -20,6 +20,7 @@ interface WorldMapProps {
   currentPosition: Geoposition | null;
   groundTrack: GroundTrackResult | null;
   observer: ObserverLocation;
+  observerName?: string;
   satelliteName?: string;
   constellationPositions?: { noradId: number; name: string; latitude: number; longitude: number }[];
   showConstellation?: boolean;
@@ -32,6 +33,7 @@ export const WorldMap: React.FC<WorldMapProps> = ({
   currentPosition,
   groundTrack,
   observer,
+  observerName,
   satelliteName = 'Satellite',
   constellationPositions = [],
   showConstellation = false,
@@ -146,7 +148,7 @@ export const WorldMap: React.FC<WorldMapProps> = ({
             />
           ))}
 
-        {/* Observer Location Pin (Buenos Aires) */}
+        {/* Observer Location Pin */}
         <G>
           <Circle
             cx={obsX}
@@ -158,12 +160,13 @@ export const WorldMap: React.FC<WorldMapProps> = ({
           />
           <Circle cx={obsX} cy={obsY} r="1.8" fill={colors.accentGold} />
           <SvgText
-            x={obsX + 4}
-            y={obsY + 2}
+            x={obsX > 280 ? obsX - 5 : obsX + 4}
+            y={obsY > 165 ? obsY - 4 : obsY + 2}
+            textAnchor={obsX > 280 ? 'end' : 'start'}
             fill={colors.accentGold}
             fontSize="5.5"
             fontWeight="bold">
-            Buenos Aires
+            {observerName || 'Observador'}
           </SvgText>
         </G>
 
