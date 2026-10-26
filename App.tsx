@@ -29,6 +29,7 @@ import { Satellite } from './src/domain/models/Satellite';
 import * as satellite from 'satellite.js';
 
 const LOGO_IMG = require('./src/assets/images/logo_fondo_transparente.png');
+const LOGO_ICON_IMG = require('./src/assets/images/logo_icon.png');
 
 const CATEGORIES = ['Todos', 'ISS', 'Starlink', 'GPS', 'Clima'];
 
@@ -245,7 +246,7 @@ export default function App() {
       {/* Top Bar with Tokens & Status */}
       <View style={styles.topBar}>
         <View style={styles.logoHeader}>
-          <Image source={LOGO_IMG} style={styles.headerLogo} resizeMode="contain" />
+          <Image source={LOGO_ICON_IMG} style={styles.headerLogo} resizeMode="contain" />
           <View>
             <Text style={styles.appName}>Satellite Tracker</Text>
             <Text style={styles.appSub}>PREDICTOR ORBITAL SGP4</Text>
@@ -389,19 +390,19 @@ export default function App() {
             </View>
           </View>
 
-          {/* Assisted Pointer Button (RF-07) */}
+          {/* Assisted Pointer Button */}
           <TouchableOpacity
             style={styles.openCompassButton}
             onPress={() => setCompassModalVisible(true)}
             activeOpacity={0.8}>
-            <Text style={styles.openCompassText}>APUNTADOR CELESTE (MODO BRÚJULA RF-07)</Text>
+            <Text style={styles.openCompassText}>APUNTADOR CELESTE (MODO BRÚJULA)</Text>
           </TouchableOpacity>
         </View>
 
         {/* Pass Prediction Card (AOS, Culmination, LOS) */}
         <View style={styles.sectionCard}>
           <View style={styles.sectionHeader}>
-            <Text style={styles.sectionTitle}>PRÓXIMO PASE (RF-04)</Text>
+            <Text style={styles.sectionTitle}>PRÓXIMO PASE</Text>
             <Text style={styles.passDurationBadge}>
               {nextPass ? `${Math.round(nextPass.durationSeconds / 60)} min` : '--'}
             </Text>
@@ -427,7 +428,7 @@ export default function App() {
                 </View>
               </View>
 
-              {/* Polar Sky Chart Rendering (RF-05) */}
+              {/* Polar Sky Chart Rendering */}
               <View style={{ alignItems: 'center', marginTop: 16 }}>
                 <SkyChart
                   size={270}
@@ -438,13 +439,13 @@ export default function App() {
                 />
               </View>
 
-              {/* Notification Reminders Row (RF-06) */}
+              {/* Notification Reminders Row */}
               <View style={styles.notificationActionsRow}>
                 <TouchableOpacity
                   style={styles.scheduleButton}
                   onPress={handleScheduleReminder}
                   activeOpacity={0.8}>
-                  <Text style={styles.scheduleButtonText}>RECORDATORIO DE PASE (RF-06)</Text>
+                  <Text style={styles.scheduleButtonText}>RECORDATORIO DE PASE</Text>
                 </TouchableOpacity>
 
                 <TouchableOpacity
@@ -466,11 +467,11 @@ export default function App() {
           )}
         </View>
 
-        {/* Cross-Validation Layer (RF-15) */}
+        {/* Cross-Validation Layer */}
         <View style={[styles.sectionCard, styles.validationCard]}>
           <View style={styles.sectionHeader}>
             <View>
-              <Text style={styles.sectionTitle}>VALIDACIÓN CRUZADA (RF-15)</Text>
+              <Text style={styles.sectionTitle}>VALIDACIÓN CRUZADA</Text>
               <Text style={styles.validationSubtitle}>Comparado con API de Where The ISS At?</Text>
             </View>
             <TouchableOpacity

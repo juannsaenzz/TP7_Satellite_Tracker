@@ -69,7 +69,7 @@ export const CompassModal: React.FC<CompassModalProps> = ({
         {/* Header */}        <View style={styles.header}>
           <View>
             <Text style={styles.headerTitle}>Orientación Asistida</Text>
-            <Text style={styles.headerSubtitle}>BRÚJULA Y APUNTADOR CELESTE (RF-07)</Text>
+            <Text style={styles.headerSubtitle}>BRÚJULA Y APUNTADOR CELESTE</Text>
           </View>
           <TouchableOpacity style={styles.closeButton} onPress={onClose}>
             <Text style={styles.closeButtonText}>✕</Text>

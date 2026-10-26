@@ -100,7 +100,7 @@ export const SatelliteSearchModal: React.FC<SatelliteSearchModalProps> = ({
         <View style={styles.header}>
           <View>
             <Text style={styles.headerTitle}>Catálogo de Satélites</Text>
-            <Text style={styles.headerSubtitle}>Buscar en CelesTrak y Constelaciones (RF-01)</Text>
+            <Text style={styles.headerSubtitle}>Buscar en CelesTrak y Constelaciones</Text>
           </View>
           <TouchableOpacity style={styles.closeButton} onPress={onClose}>
             <Text style={styles.closeButtonText}>✕</Text>

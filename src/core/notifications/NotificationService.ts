@@ -67,8 +67,8 @@ export class NotificationService {
     await notifee.createTriggerNotification(
       {
         id: notificationId,
-        title: `🛰 Satellite Pass Alert: ${pass.satelliteName}`,
-        body: `Pass starting in ${leadMinutes} min! Max elevation ${pass.maxElevation.elevation.toFixed(0)}° at ${pass.maxElevation.time.toLocaleTimeString()}.`,
+        title: `Alerta de pase: ${pass.satelliteName}`,
+        body: `¡Pase comenzando en ${leadMinutes} min! Elevación máx. ${pass.maxElevation.elevation.toFixed(0)}° a las ${pass.maxElevation.time.toLocaleTimeString()}.`,
         android: {
           channelId: this.CHANNEL_ID,
           smallIcon: 'ic_launcher',
@@ -98,8 +98,8 @@ export class NotificationService {
 
     await notifee.displayNotification({
       id: notificationId,
-      title: `🛰 Test Pass Alert: ${satelliteName}`,
-      body: `Visible pass in 10 minutes! Max elevation 68° at ${new Date(Date.now() + 10 * 60 * 1000).toLocaleTimeString()}.`,
+      title: `Alerta de prueba de pase: ${satelliteName}`,
+      body: `¡Pase visible en 10 minutos! Elevación máx. 68° a las ${new Date(Date.now() + 10 * 60 * 1000).toLocaleTimeString()}.`,
       android: {
         channelId: this.CHANNEL_ID,
         smallIcon: 'ic_launcher',
