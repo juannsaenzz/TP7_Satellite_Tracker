@@ -22,11 +22,11 @@ interface SatelliteSearchModalProps {
 }
 
 const CATEGORY_TABS: { label: string; category: SatelliteCategory }[] = [
-  { label: 'ISS / Stations', category: 'iss' },
+  { label: 'ISS / Estaciones', category: 'iss' },
   { label: 'Starlink', category: 'starlink' },
   { label: 'GPS / GNSS', category: 'gps' },
-  { label: 'Weather', category: 'weather' },
-  { label: 'Science', category: 'science' },
+  { label: 'Meteorología', category: 'weather' },
+  { label: 'Ciencia', category: 'science' },
 ];
 
 export const SatelliteSearchModal: React.FC<SatelliteSearchModalProps> = ({
@@ -84,10 +84,10 @@ export const SatelliteSearchModal: React.FC<SatelliteSearchModalProps> = ({
 
         <View style={styles.itemFooter}>
           <Text style={styles.itemCategoryBadge}>
-            {item.category?.toUpperCase() || 'SATELLITE'}
+            {item.category?.toUpperCase() || 'SATÉLITE'}
           </Text>
-          <Text style={styles.itemSourceText}>Source: {item.source.toUpperCase()}</Text>
-          {isSelected && <Text style={styles.selectedBadge}>ACTIVE TARGET</Text>}
+          <Text style={styles.itemSourceText}>Fuente: {item.source.toUpperCase()}</Text>
+          {isSelected && <Text style={styles.selectedBadge}>OBJETIVO ACTIVO</Text>}
         </View>
       </TouchableOpacity>
     );
@@ -99,8 +99,8 @@ export const SatelliteSearchModal: React.FC<SatelliteSearchModalProps> = ({
         {/* Header */}
         <View style={styles.header}>
           <View>
-            <Text style={styles.headerTitle}>Satellite Catalog</Text>
-            <Text style={styles.headerSubtitle}>Search CelesTrak & Orbital Constellations (RF-01)</Text>
+            <Text style={styles.headerTitle}>Catálogo de Satélites</Text>
+            <Text style={styles.headerSubtitle}>Buscar en CelesTrak y Constelaciones (RF-01)</Text>
           </View>
           <TouchableOpacity style={styles.closeButton} onPress={onClose}>
             <Text style={styles.closeButtonText}>✕</Text>
@@ -111,7 +111,7 @@ export const SatelliteSearchModal: React.FC<SatelliteSearchModalProps> = ({
         <View style={styles.searchWrapper}>
           <TextInput
             style={styles.searchInput}
-            placeholder="Search by name or NORAD ID..."
+            placeholder="Buscar por nombre o ID NORAD..."
             placeholderTextColor={colors.textDim}
             value={searchQuery}
             onChangeText={setSearchQuery}
@@ -141,16 +141,16 @@ export const SatelliteSearchModal: React.FC<SatelliteSearchModalProps> = ({
         {/* Cache status & count metadata */}
         <View style={styles.metaBar}>
           <Text style={styles.metaText}>
-            {filteredList.length} satellites •{' '}
+            {filteredList.length} satélites •{' '}
             {catalogMeta?.fromCache
-              ? `Cached (${catalogMeta.dataAgeHours.toFixed(1)}h ago)`
-              : 'Live fetched'}
+              ? `En caché (${catalogMeta.dataAgeHours.toFixed(1)} h)`
+              : 'Obtenidos en vivo'}
           </Text>
           <TouchableOpacity
             onPress={() => loadCategoryData(activeCategory, true)}
             disabled={loading}
             style={styles.refreshButton}>
-            <Text style={styles.refreshButtonText}>⟳ Refresh</Text>
+            <Text style={styles.refreshButtonText}>⟳ Actualizar</Text>
           </TouchableOpacity>
         </View>
 
@@ -158,7 +158,7 @@ export const SatelliteSearchModal: React.FC<SatelliteSearchModalProps> = ({
         {loading ? (
           <View style={styles.loadingContainer}>
             <ActivityIndicator size="large" color={colors.primary} />
-            <Text style={styles.loadingText}>Fetching orbital elements from CelesTrak...</Text>
+            <Text style={styles.loadingText}>Descargando elementos orbitales de CelesTrak...</Text>
           </View>
         ) : (
           <FlatList
@@ -168,7 +168,7 @@ export const SatelliteSearchModal: React.FC<SatelliteSearchModalProps> = ({
             contentContainerStyle={styles.listContent}
             ListEmptyComponent={
               <View style={styles.emptyContainer}>
-                <Text style={styles.emptyText}>No satellites matching "{searchQuery}"</Text>
+                <Text style={styles.emptyText}>No se encontraron satélites para "{searchQuery}"</Text>
               </View>
             }
           />

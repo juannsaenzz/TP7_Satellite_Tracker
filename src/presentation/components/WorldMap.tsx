@@ -114,8 +114,8 @@ export const WorldMap: React.FC<WorldMapProps> = ({
 
         {/* Observer Location Marker */}
         <Marker coordinate={{ latitude: observer.latitude, longitude: observer.longitude }}>
-          <View style={styles.observerMarker}>
-            <Text style={styles.observerIcon}>📍</Text>
+          <View style={styles.observerPinOuter}>
+            <View style={styles.observerPinInner} />
           </View>
         </Marker>
 
@@ -128,7 +128,7 @@ export const WorldMap: React.FC<WorldMapProps> = ({
             <View style={styles.satelliteMarker}>
               <View style={styles.markerPulse} />
               <View style={styles.markerCenter}>
-                <Text style={styles.markerSatelliteIcon}>🛰</Text>
+                <View style={styles.satelliteCoreDot} />
               </View>
               <View style={styles.markerLabelContainer}>
                 <Text style={styles.markerLabelText} numberOfLines={1}>
@@ -145,11 +145,11 @@ export const WorldMap: React.FC<WorldMapProps> = ({
         <View style={styles.trackLegend}>
           <View style={styles.legendRow}>
             <View style={[styles.legendBar, { backgroundColor: colors.accentMint }]} />
-            <Text style={styles.legendText}>Future Orbit</Text>
+            <Text style={styles.legendText}>Órbita futura</Text>
           </View>
           <View style={styles.legendRow}>
             <View style={[styles.legendBar, { backgroundColor: colors.primary }]} />
-            <Text style={styles.legendText}>Past Orbit</Text>
+            <Text style={styles.legendText}>Órbita pasada</Text>
           </View>
         </View>
 
@@ -159,7 +159,7 @@ export const WorldMap: React.FC<WorldMapProps> = ({
               style={[styles.toggleButton, showFootprint && styles.toggleButtonActive]}
               onPress={onToggleFootprint}>
               <Text style={[styles.toggleText, showFootprint && styles.toggleTextActive]}>
-                Footprint
+                Huella
               </Text>
             </TouchableOpacity>
           )}
@@ -169,7 +169,7 @@ export const WorldMap: React.FC<WorldMapProps> = ({
               style={[styles.toggleButton, showConstellation && styles.toggleButtonActive]}
               onPress={onToggleConstellation}>
               <Text style={[styles.toggleText, showConstellation && styles.toggleTextActive]}>
-                Constellation
+                Constelación
               </Text>
             </TouchableOpacity>
           )}
@@ -213,8 +213,11 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
-  markerSatelliteIcon: {
-    fontSize: 12,
+  satelliteCoreDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: '#00E5FF',
   },
   markerLabelContainer: {
     backgroundColor: colors.surface,
@@ -230,12 +233,21 @@ const styles = StyleSheet.create({
     fontSize: 9,
     fontWeight: '800',
   },
-  observerMarker: {
-    alignItems: 'center',
+  observerPinOuter: {
+    width: 14,
+    height: 14,
+    borderRadius: 7,
+    backgroundColor: 'rgba(255, 184, 69, 0.35)',
+    borderWidth: 1.5,
+    borderColor: colors.accentGold,
     justifyContent: 'center',
+    alignItems: 'center',
   },
-  observerIcon: {
-    fontSize: 20,
+  observerPinInner: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+    backgroundColor: colors.accentGold,
   },
   constellationDot: {
     width: 6,

@@ -51,27 +51,27 @@ export class CompassService {
    */
   public static getGuidanceText(delta: OrientationDelta): string {
     if (delta.isLocked) {
-      return 'TARGET LOCKED • AIM DIRECTLY AT SATELLITE';
+      return 'OBJETIVO FIJADO • APUNTAR DIRECTO AL SATÉLITE';
     }
 
     const instructions: string[] = [];
 
     if (Math.abs(delta.relativeHeadingDeg) > 4) {
       if (delta.relativeHeadingDeg > 0) {
-        instructions.push(`Turn right ${Math.round(delta.relativeHeadingDeg)}°`);
+        instructions.push(`Girar a la derecha ${Math.round(delta.relativeHeadingDeg)}°`);
       } else {
-        instructions.push(`Turn left ${Math.round(Math.abs(delta.relativeHeadingDeg))}°`);
+        instructions.push(`Girar a la izquierda ${Math.round(Math.abs(delta.relativeHeadingDeg))}°`);
       }
     }
 
     if (Math.abs(delta.relativePitchDeg) > 4) {
       if (delta.relativePitchDeg > 0) {
-        instructions.push(`Tilt up ${Math.round(delta.relativePitchDeg)}°`);
+        instructions.push(`Inclinar hacia arriba ${Math.round(delta.relativePitchDeg)}°`);
       } else {
-        instructions.push(`Tilt down ${Math.round(Math.abs(delta.relativePitchDeg))}°`);
+        instructions.push(`Inclinar hacia abajo ${Math.round(Math.abs(delta.relativePitchDeg))}°`);
       }
     }
 
-    return instructions.length > 0 ? instructions.join(' • ') : 'ALIGNING...';
+    return instructions.length > 0 ? instructions.join(' • ') : 'ALINEANDO...';
   }
 }

@@ -66,11 +66,10 @@ export const CompassModal: React.FC<CompassModalProps> = ({
   return (
     <Modal visible={visible} animationType="slide" transparent={false} onRequestClose={onClose}>
       <SafeAreaView style={styles.container}>
-        {/* Header */}
-        <View style={styles.header}>
+        {/* Header */}        <View style={styles.header}>
           <View>
-            <Text style={styles.headerTitle}>Assisted Orientation</Text>
-            <Text style={styles.headerSubtitle}>COMPASS & SKY POINTER (RF-07)</Text>
+            <Text style={styles.headerTitle}>Orientación Asistida</Text>
+            <Text style={styles.headerSubtitle}>BRÚJULA Y APUNTADOR CELESTE (RF-07)</Text>
           </View>
           <TouchableOpacity style={styles.closeButton} onPress={onClose}>
             <Text style={styles.closeButtonText}>✕</Text>
@@ -87,7 +86,7 @@ export const CompassModal: React.FC<CompassModalProps> = ({
           </View>
           <View style={[styles.lockStatusPill, delta.isLocked && styles.lockStatusPillActive]}>
             <Text style={[styles.lockStatusText, delta.isLocked && styles.lockStatusTextActive]}>
-              {delta.isLocked ? '🎯 TARGET LOCKED' : 'SEARCHING'}
+              {delta.isLocked ? 'OBJETIVO FIJADO' : 'BUSCANDO'}
             </Text>
           </View>
         </View>
@@ -169,7 +168,7 @@ export const CompassModal: React.FC<CompassModalProps> = ({
               fontSize="11"
               fontWeight="700"
               textAnchor="middle">
-              W
+              O
             </SvgText>
 
             {/* Rotating Needle pointing towards the satellite */}
@@ -198,7 +197,7 @@ export const CompassModal: React.FC<CompassModalProps> = ({
             <Circle
               cx={dialCenter}
               cy={dialCenter}
-              r="7"
+              r={7}
               fill={delta.isLocked ? colors.accentMint : colors.accentGold}
               stroke="#FFFFFF"
               strokeWidth="2"
@@ -216,53 +215,53 @@ export const CompassModal: React.FC<CompassModalProps> = ({
         {/* Real-time Angle Metrics Grid */}
         <View style={styles.metricsGrid}>
           <View style={styles.metricCard}>
-            <Text style={styles.metricLabel}>DEVICE HEADING</Text>
+            <Text style={styles.metricLabel}>RUMBO DEL DISPOSITIVO</Text>
             <Text style={styles.metricValue}>{Math.round(deviceHeading)}°</Text>
-            <Text style={styles.metricSub}>Target Az: {Math.round(targetAz)}°</Text>
+            <Text style={styles.metricSub}>Azimut obj: {Math.round(targetAz)}°</Text>
           </View>
           <View style={styles.metricCard}>
-            <Text style={styles.metricLabel}>DEVICE PITCH</Text>
+            <Text style={styles.metricLabel}>INCLINACIÓN (PITCH)</Text>
             <Text style={styles.metricValue}>{Math.round(devicePitch)}°</Text>
-            <Text style={styles.metricSub}>Target El: {Math.round(targetEl)}°</Text>
+            <Text style={styles.metricSub}>Elevación obj: {Math.round(targetEl)}°</Text>
           </View>
           <View style={styles.metricCard}>
-            <Text style={styles.metricLabel}>ANGULAR OFFSET</Text>
+            <Text style={styles.metricLabel}>DESFASE ANGULAR</Text>
             <Text style={[styles.metricValue, delta.isLocked ? styles.textMint : styles.textGold]}>
               {delta.targetDistanceAngleDeg.toFixed(1)}°
             </Text>
-            <Text style={styles.metricSub}>{delta.isLocked ? 'In Beam' : 'Adjust Phone'}</Text>
+            <Text style={styles.metricSub}>{delta.isLocked ? 'En haz' : 'Alinear teléfono'}</Text>
           </View>
         </View>
 
         {/* Interactive Calibration & Simulation Controls */}
         <View style={styles.controlsSection}>
-          <Text style={styles.controlsSectionTitle}>ORIENTATION CONTROLS (SIMULATE / CALIBRATE)</Text>
+          <Text style={styles.controlsSectionTitle}>CONTROLES DE ORIENTACIÓN (SIMULAR / CALIBRAR)</Text>
           <View style={styles.buttonRow}>
             <TouchableOpacity
               style={styles.adjustButton}
               onPress={() => setDeviceHeading((deviceHeading - 15 + 360) % 360)}>
-              <Text style={styles.adjustButtonText}>↶ Rotate -15°</Text>
+              <Text style={styles.adjustButtonText}>↶ Girar -15°</Text>
             </TouchableOpacity>
             <TouchableOpacity
               style={styles.adjustButton}
               onPress={() => setDeviceHeading((deviceHeading + 15) % 360)}>
-              <Text style={styles.adjustButtonText}>Rotate +15° ↷</Text>
+              <Text style={styles.adjustButtonText}>Girar +15° ↷</Text>
             </TouchableOpacity>
           </View>
           <View style={styles.buttonRow}>
             <TouchableOpacity
               style={styles.adjustButton}
               onPress={() => setDevicePitch(Math.max(0, devicePitch - 10))}>
-              <Text style={styles.adjustButtonText}>Tilt Down -10°</Text>
+              <Text style={styles.adjustButtonText}>Bajar -10°</Text>
             </TouchableOpacity>
             <TouchableOpacity
               style={styles.adjustButton}
               onPress={() => setDevicePitch(Math.min(90, devicePitch + 10))}>
-              <Text style={styles.adjustButtonText}>Tilt Up +10°</Text>
+              <Text style={styles.adjustButtonText}>Subir +10°</Text>
             </TouchableOpacity>
           </View>
           <TouchableOpacity style={styles.autoAlignButton} onPress={autoAlignToTarget}>
-            <Text style={styles.autoAlignButtonText}>🎯 AUTO-ALIGN TO SATELLITE (DEMO LOCK)</Text>
+            <Text style={styles.autoAlignButtonText}>AUTO-ALINEAR AL SATÉLITE (BLOQUEO DEMO)</Text>
           </TouchableOpacity>
         </View>
       </SafeAreaView>

@@ -30,7 +30,7 @@ import * as satellite from 'satellite.js';
 
 const LOGO_IMG = require('./src/assets/images/logo_fondo_transparente.png');
 
-const CATEGORIES = ['All', 'ISS', 'Starlink', 'GPS', 'Weather'];
+const CATEGORIES = ['Todos', 'ISS', 'Starlink', 'GPS', 'Clima'];
 
 const DEFAULT_OBSERVER: ObserverLocation = {
   latitude: -34.6037,
@@ -64,15 +64,17 @@ export default function App() {
     if (!nextPass) return;
     const result = await NotificationService.schedulePassAlert(nextPass, 10);
     if (result) {
-      setScheduledAlertText(`Alert set for ${result.triggerTime.toLocaleTimeString()} (10m before AOS)`);
+      setScheduledAlertText(
+        `Alerta programada para las ${result.triggerTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} (10 min antes del AOS)`
+      );
     } else {
-      setScheduledAlertText('Pass already started or in the past');
+      setScheduledAlertText('El pase ya comenzó o está en el pasado');
     }
   }
 
   async function handleTestNotification() {
     await NotificationService.sendImmediateTestAlert(tleInfo?.name || 'ISS (ZARYA)');
-    setScheduledAlertText('Test notification dispatched!');
+    setScheduledAlertText('¡Notificación de prueba enviada!');
   }
 
   // Geographic Map state (RF-10, RF-11, RF-12, RF-13)
@@ -231,7 +233,7 @@ export default function App() {
       <SafeAreaView style={[styles.container, styles.centered]}>
         <Image source={LOGO_IMG} style={styles.loadingLogo} resizeMode="contain" />
         <ActivityIndicator size="large" color={colors.primary} style={{ marginTop: 24 }} />
-        <Text style={styles.loadingText}>INITIALIZING ORBITAL ENGINE...</Text>
+        <Text style={styles.loadingText}>INICIALIZANDO MOTOR ORBITAL SGP4...</Text>
       </SafeAreaView>
     );
   }
@@ -246,7 +248,7 @@ export default function App() {
           <Image source={LOGO_IMG} style={styles.headerLogo} resizeMode="contain" />
           <View>
             <Text style={styles.appName}>Satellite Tracker</Text>
-            <Text style={styles.appSub}>SGP4 ORBITAL PREDICTOR</Text>
+            <Text style={styles.appSub}>PREDICTOR ORBITAL SGP4</Text>
           </View>
         </View>
 
@@ -254,14 +256,13 @@ export default function App() {
           style={styles.tokenPill}
           onPress={() => setCatalogModalVisible(true)}
           activeOpacity={0.7}>
-          <Text style={styles.tokenStar}>★</Text>
           <Text style={styles.tokenText}>
-            {tleInfo ? `NORAD: ${tleInfo.line2.substring(2, 7).trim()}` : 'CATALOG'} ▾
+            {tleInfo ? `NORAD: ${tleInfo.line2.substring(2, 7).trim()}` : 'CATÁLOGO'} ▾
           </Text>
         </TouchableOpacity>
       </View>
 
-      {/* Category Pills (Figma style: All, ISS, Starlink, GPS...) */}
+      {/* Category Pills (Figma style: Todos, ISS, Starlink, GPS...) */}
       <View style={styles.categoriesWrapper}>
         <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.categoriesList}>
           {CATEGORIES.map(cat => {
@@ -286,27 +287,27 @@ export default function App() {
         <View style={styles.mainCard}>
           <View style={styles.cardHeader}>
             <View style={{ flex: 1, marginRight: 8 }}>
-              <Text style={styles.targetLabel}>TARGET SATELLITE</Text>
+              <Text style={styles.targetLabel}>SATÉLITE OBJETIVO</Text>
               <Text style={styles.targetName} numberOfLines={1}>{tleInfo?.name || 'ISS (ZARYA)'}</Text>
             </View>
             <TouchableOpacity
               style={styles.changeTargetButton}
               onPress={() => setCatalogModalVisible(true)}>
-              <Text style={styles.changeTargetText}>CHANGE ▾</Text>
+              <Text style={styles.changeTargetText}>CAMBIAR ▾</Text>
             </TouchableOpacity>
           </View>
 
           <View style={styles.cardStatsGrid}>
             <View style={styles.cardStatItem}>
-              <Text style={styles.cardStatLabel}>PERIOD</Text>
+              <Text style={styles.cardStatLabel}>PERÍODO</Text>
               <Text style={styles.cardStatValue}>{orbitalPeriod.toFixed(1)} min</Text>
             </View>
             <View style={styles.cardStatItem}>
-              <Text style={styles.cardStatLabel}>FOOTPRINT</Text>
+              <Text style={styles.cardStatLabel}>HUELLA</Text>
               <Text style={styles.cardStatValue}>{footprint ? `${Math.round(footprint.radiusKm)} km` : '--'}</Text>
             </View>
             <View style={styles.cardStatItem}>
-              <Text style={styles.cardStatLabel}>MASK</Text>
+              <Text style={styles.cardStatLabel}>MÁSCARA</Text>
               <Text style={styles.cardStatValueGold}>10.0°</Text>
             </View>
           </View>
@@ -328,31 +329,31 @@ export default function App() {
         {/* Real-time Subsatellite Telemetry Card */}
         <View style={styles.sectionCard}>
           <View style={styles.sectionHeader}>
-            <Text style={styles.sectionTitle}>REAL-TIME GEOPOSITION</Text>
-            <Text style={styles.sectionBadge}>LOCAL 1s REFRESH</Text>
+            <Text style={styles.sectionTitle}>GEOPOSICIÓN EN TIEMPO REAL</Text>
+            <Text style={styles.sectionBadge}>ACTUALIZACIÓN 1s LOCAL</Text>
           </View>
 
           <View style={styles.telemetryGrid}>
             <View style={styles.telemetryBox}>
-              <Text style={styles.telemetryLabel}>LATITUDE</Text>
+              <Text style={styles.telemetryLabel}>LATITUD</Text>
               <Text style={styles.telemetryNumber}>
                 {currentPosition ? `${currentPosition.latitude.toFixed(4)}°` : '--'}
               </Text>
             </View>
             <View style={styles.telemetryBox}>
-              <Text style={styles.telemetryLabel}>LONGITUDE</Text>
+              <Text style={styles.telemetryLabel}>LONGITUD</Text>
               <Text style={styles.telemetryNumber}>
                 {currentPosition ? `${currentPosition.longitude.toFixed(4)}°` : '--'}
               </Text>
             </View>
             <View style={styles.telemetryBox}>
-              <Text style={styles.telemetryLabel}>ALTITUDE</Text>
+              <Text style={styles.telemetryLabel}>ALTITUD</Text>
               <Text style={styles.telemetryNumberHighlight}>
                 {currentPosition ? `${currentPosition.altitude.toFixed(1)} km` : '--'}
               </Text>
             </View>
             <View style={styles.telemetryBox}>
-              <Text style={styles.telemetryLabel}>UTC TIME</Text>
+              <Text style={styles.telemetryLabel}>HORA UTC</Text>
               <Text style={styles.telemetryTime}>
                 {currentPosition ? new Date(currentPosition.timestamp).toISOString().slice(11, 19) : '--'}
               </Text>
@@ -363,25 +364,25 @@ export default function App() {
         {/* Observer Look Angles (Azimuth / Elevation) */}
         <View style={styles.sectionCard}>
           <View style={styles.sectionHeader}>
-            <Text style={styles.sectionTitle}>OBSERVER TOPOCENTRIC VECTORS</Text>
+            <Text style={styles.sectionTitle}>VECTORES TOPOCÉNTRICOS (OBSERVADOR)</Text>
             <Text style={styles.sectionBadgeLocation}>BUENOS AIRES</Text>
           </View>
 
           <View style={styles.telemetryGrid}>
             <View style={styles.telemetryBox}>
-              <Text style={styles.telemetryLabel}>AZIMUTH</Text>
+              <Text style={styles.telemetryLabel}>AZIMUT</Text>
               <Text style={styles.telemetryNumberGold}>
                 {lookAngle ? `${lookAngle.azimuth.toFixed(1)}°` : '--'}
               </Text>
             </View>
             <View style={styles.telemetryBox}>
-              <Text style={styles.telemetryLabel}>ELEVATION</Text>
+              <Text style={styles.telemetryLabel}>ELEVACIÓN</Text>
               <Text style={[styles.telemetryNumberMint, (lookAngle?.elevation || 0) < 0 && styles.dimText]}>
                 {lookAngle ? `${lookAngle.elevation.toFixed(1)}°` : '--'}
               </Text>
             </View>
             <View style={[styles.telemetryBox, { width: '100%' }]}>
-              <Text style={styles.telemetryLabel}>SLANT RANGE DISTANCE</Text>
+              <Text style={styles.telemetryLabel}>DISTANCIA EN LÍNEA DE VISTA</Text>
               <Text style={styles.telemetryNumber}>
                 {lookAngle ? `${Math.round(lookAngle.rangeKm).toLocaleString()} km` : '--'}
               </Text>
@@ -393,14 +394,14 @@ export default function App() {
             style={styles.openCompassButton}
             onPress={() => setCompassModalVisible(true)}
             activeOpacity={0.8}>
-            <Text style={styles.openCompassText}>🧭 OPEN SKY POINTER (COMPASS MODE RF-07)</Text>
+            <Text style={styles.openCompassText}>APUNTADOR CELESTE (MODO BRÚJULA RF-07)</Text>
           </TouchableOpacity>
         </View>
 
         {/* Pass Prediction Card (AOS, Culmination, LOS) */}
         <View style={styles.sectionCard}>
           <View style={styles.sectionHeader}>
-            <Text style={styles.sectionTitle}>UPCOMING PASS WINDOW (RF-04)</Text>
+            <Text style={styles.sectionTitle}>PRÓXIMO PASE (RF-04)</Text>
             <Text style={styles.passDurationBadge}>
               {nextPass ? `${Math.round(nextPass.durationSeconds / 60)} min` : '--'}
             </Text>
@@ -410,17 +411,17 @@ export default function App() {
             <>
               <View style={styles.passList}>
                 <View style={styles.passItem}>
-                  <Text style={styles.passStepLabel}>AOS (Acquisition)</Text>
+                  <Text style={styles.passStepLabel}>AOS (Aparición)</Text>
                   <Text style={styles.passStepTime}>{nextPass.aos.time.toLocaleTimeString()}</Text>
                   <Text style={styles.passStepAngle}>{nextPass.aos.azimuth.toFixed(0)}° Az</Text>
                 </View>
                 <View style={[styles.passItem, styles.passItemCulmination]}>
-                  <Text style={styles.passStepLabelCulmination}>MAX ELEVATION</Text>
+                  <Text style={styles.passStepLabelCulmination}>ELEVACIÓN MÁX.</Text>
                   <Text style={styles.passStepTimeCulmination}>{nextPass.maxElevation.elevation.toFixed(1)}°</Text>
                   <Text style={styles.passStepAngleCulmination}>{nextPass.maxElevation.time.toLocaleTimeString()}</Text>
                 </View>
                 <View style={styles.passItem}>
-                  <Text style={styles.passStepLabel}>LOS (Loss)</Text>
+                  <Text style={styles.passStepLabel}>LOS (Ocultamiento)</Text>
                   <Text style={styles.passStepTime}>{nextPass.los.time.toLocaleTimeString()}</Text>
                   <Text style={styles.passStepAngle}>{nextPass.los.azimuth.toFixed(0)}° Az</Text>
                 </View>
@@ -443,14 +444,14 @@ export default function App() {
                   style={styles.scheduleButton}
                   onPress={handleScheduleReminder}
                   activeOpacity={0.8}>
-                  <Text style={styles.scheduleButtonText}>🔔 SCHEDULE PASS ALERT (RF-06)</Text>
+                  <Text style={styles.scheduleButtonText}>RECORDATORIO DE PASE (RF-06)</Text>
                 </TouchableOpacity>
 
                 <TouchableOpacity
                   style={styles.testNotificationButton}
                   onPress={handleTestNotification}
                   activeOpacity={0.8}>
-                  <Text style={styles.testNotificationText}>⚡ TEST NOTIF</Text>
+                  <Text style={styles.testNotificationText}>PROBAR ALERTA</Text>
                 </TouchableOpacity>
               </View>
 
@@ -461,7 +462,7 @@ export default function App() {
               )}
             </>
           ) : (
-            <Text style={styles.noPassText}>No visible passes above 10° in the next 72h.</Text>
+            <Text style={styles.noPassText}>No hay pases visibles sobre 10° en las próximas 72 hs.</Text>
           )}
         </View>
 
@@ -469,8 +470,8 @@ export default function App() {
         <View style={[styles.sectionCard, styles.validationCard]}>
           <View style={styles.sectionHeader}>
             <View>
-              <Text style={styles.sectionTitle}>CROSS-VALIDATION (RF-15)</Text>
-              <Text style={styles.validationSubtitle}>Compared against Where The ISS At? API</Text>
+              <Text style={styles.sectionTitle}>VALIDACIÓN CRUZADA (RF-15)</Text>
+              <Text style={styles.validationSubtitle}>Comparado con API de Where The ISS At?</Text>
             </View>
             <TouchableOpacity
               style={styles.verifyButton}
@@ -479,7 +480,7 @@ export default function App() {
               {validating ? (
                 <ActivityIndicator size="small" color="#FFFFFF" />
               ) : (
-                <Text style={styles.verifyButtonText}>VERIFY</Text>
+                <Text style={styles.verifyButtonText}>VALIDAR</Text>
               )}
             </TouchableOpacity>
           </View>
@@ -487,24 +488,24 @@ export default function App() {
           {validation ? (
             <View style={styles.validationBox}>
               <View style={styles.errorBanner}>
-                <Text style={styles.errorLabel}>3D ECEF DISTANCE ERROR</Text>
+                <Text style={styles.errorLabel}>ERROR DE DISTANCIA ECEF 3D</Text>
                 <Text style={styles.errorNumber}>{validation.errorKm.toFixed(2)} km</Text>
                 <Text style={styles.errorSub}>
-                  Surface Δ: {validation.surfaceErrorKm.toFixed(2)} km • Altitude Δ: {validation.altitudeDifferenceKm.toFixed(2)} km
+                  Δ Superficie: {validation.surfaceErrorKm.toFixed(2)} km • Δ Altitud: {validation.altitudeDifferenceKm.toFixed(2)} km
                 </Text>
               </View>
 
               <View style={styles.validationMeta}>
                 <Text style={styles.validationMetaText}>
-                  TLE Age: {validation.dataAgeHours.toFixed(1)} h ({validation.isStale ? 'STALE' : 'FRESH'})
+                  Antigüedad TLE: {validation.dataAgeHours.toFixed(1)} h ({validation.isStale ? 'OBSOLETO' : 'ACTUALIZADO'})
                 </Text>
                 <Text style={styles.validationStatusPass}>
-                  {'✓ PASS: Error within standard SGP4 tolerance (< 5 km)'}
+                  {'✓ APROBADO: Error dentro de tolerancia SGP4 (< 5 km)'}
                 </Text>
               </View>
             </View>
           ) : (
-            <Text style={styles.noPassText}>Press VERIFY to compute real-time error against live ground truth.</Text>
+            <Text style={styles.noPassText}>Presioná VALIDAR para calcular el error en tiempo real.</Text>
           )}
         </View>
       </ScrollView>
@@ -513,27 +514,30 @@ export default function App() {
       <View style={styles.bottomNav}>
         <TouchableOpacity style={styles.navItem} onPress={() => setActiveTab('tracker')}>
           <Text style={[styles.navIcon, activeTab === 'tracker' && styles.navIconActive]}>⌖</Text>
-          <Text style={[styles.navText, activeTab === 'tracker' && styles.navTextActive]}>Tracker</Text>
+          <Text style={[styles.navText, activeTab === 'tracker' && styles.navTextActive]}>Rastreador</Text>
         </TouchableOpacity>
 
         <TouchableOpacity style={styles.navItem} onPress={() => setActiveTab('passes')}>
-          <Text style={[styles.navIcon, activeTab === 'passes' && styles.navIconActive]}>★</Text>
-          <Text style={[styles.navText, activeTab === 'passes' && styles.navTextActive]}>Passes</Text>
+          <Text style={[styles.navIcon, activeTab === 'passes' && styles.navIconActive]}>●</Text>
+          <Text style={[styles.navText, activeTab === 'passes' && styles.navTextActive]}>Pases</Text>
         </TouchableOpacity>
 
         {/* Center Floating Action Button (Compass Mode) */}
-        <TouchableOpacity style={styles.centerFab} onPress={() => setCompassModalVisible(true)}>
-          <Text style={styles.centerFabIcon}>🧭</Text>
+        <TouchableOpacity style={styles.centerFab} onPress={() => setCompassModalVisible(true)} activeOpacity={0.85}>
+          <View style={styles.centerFabCompassRing}>
+            <View style={styles.centerFabCompassNorth} />
+            <View style={styles.centerFabCompassSouth} />
+          </View>
         </TouchableOpacity>
 
         <TouchableOpacity style={styles.navItem} onPress={() => setActiveTab('validate')}>
           <Text style={[styles.navIcon, activeTab === 'validate' && styles.navIconActive]}>✓</Text>
-          <Text style={[styles.navText, activeTab === 'validate' && styles.navTextActive]}>Verify</Text>
+          <Text style={[styles.navText, activeTab === 'validate' && styles.navTextActive]}>Validar</Text>
         </TouchableOpacity>
 
         <TouchableOpacity style={styles.navItem}>
           <Text style={styles.navIcon}>⚙</Text>
-          <Text style={styles.navText}>Config</Text>
+          <Text style={styles.navText}>Ajustes</Text>
         </TouchableOpacity>
       </View>
 
@@ -1064,9 +1068,37 @@ const styles = StyleSheet.create({
     shadowRadius: 8,
     elevation: 8,
   },
-  centerFabIcon: {
-    color: '#FFFFFF',
-    fontSize: 14,
-    marginLeft: 2,
+  centerFabCompassRing: {
+    width: 26,
+    height: 26,
+    borderRadius: 13,
+    borderWidth: 1.5,
+    borderColor: '#FFFFFF',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  centerFabCompassNorth: {
+    width: 0,
+    height: 0,
+    borderLeftWidth: 3.5,
+    borderRightWidth: 3.5,
+    borderBottomWidth: 8,
+    borderStyle: 'solid',
+    backgroundColor: 'transparent',
+    borderLeftColor: 'transparent',
+    borderRightColor: 'transparent',
+    borderBottomColor: colors.accentMint,
+  },
+  centerFabCompassSouth: {
+    width: 0,
+    height: 0,
+    borderLeftWidth: 3.5,
+    borderRightWidth: 3.5,
+    borderTopWidth: 8,
+    borderStyle: 'solid',
+    backgroundColor: 'transparent',
+    borderLeftColor: 'transparent',
+    borderRightColor: 'transparent',
+    borderTopColor: '#FFFFFF',
   },
 });

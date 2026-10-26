@@ -109,7 +109,7 @@ export const SkyChart: React.FC<SkyChartProps> = ({
           S
         </SvgText>
         <SvgText x={center - radius - 12} y={center + 4} fill={colors.textPrimary} fontSize="11" fontWeight="700" textAnchor="middle">
-          W
+          O
         </SvgText>
 
         {/* Pass Trajectory Path */}
@@ -173,15 +173,15 @@ export const SkyChart: React.FC<SkyChartProps> = ({
       <View style={styles.legend}>
         <View style={styles.legendItem}>
           <View style={[styles.legendDot, { backgroundColor: colors.accentMint }]} />
-          <Text style={styles.legendText}>AOS (Rise)</Text>
+          <Text style={styles.legendText}>AOS (Salida)</Text>
         </View>
         <View style={styles.legendItem}>
           <View style={[styles.legendDot, { backgroundColor: colors.accentGold }]} />
-          <Text style={styles.legendText}>Max Culmination</Text>
+          <Text style={styles.legendText}>Culminación máx.</Text>
         </View>
         <View style={styles.legendItem}>
           <View style={[styles.legendDot, { backgroundColor: '#FF5252' }]} />
-          <Text style={styles.legendText}>LOS (Set)</Text>
+          <Text style={styles.legendText}>LOS (Puesta)</Text>
         </View>
       </View>
     </View>

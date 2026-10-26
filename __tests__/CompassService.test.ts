@@ -38,7 +38,7 @@ describe('CompassService Unit Tests (RF-07)', () => {
     const delta = CompassService.computeOrientationDelta(targetAz, targetEl, deviceHeading, devicePitch);
     const guidance = CompassService.getGuidanceText(delta);
 
-    expect(guidance).toContain('Turn right');
-    expect(guidance).toContain('Tilt up');
+    expect(guidance).toContain('Girar a la derecha');
+    expect(guidance).toContain('Inclinar hacia arriba');
   });
 });
