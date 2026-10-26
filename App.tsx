@@ -356,9 +356,11 @@ export default function App() {
             {/* Target Satellite Main Card */}
             <View style={styles.mainCard}>
               <View style={styles.cardHeader}>
-                <View>
+                <View style={styles.cardHeaderLeft}>
                   <Text style={styles.targetLabel}>SATÉLITE OBJETIVO</Text>
-                  <Text style={styles.targetName}>{tleInfo?.name || 'ISS (ZARYA)'}</Text>
+                  <Text style={styles.targetName} numberOfLines={1} ellipsizeMode="tail">
+                    {tleInfo?.name || 'ISS (ZARYA)'}
+                  </Text>
                 </View>
                 <TouchableOpacity
                   style={styles.changeTargetButton}
@@ -404,7 +406,7 @@ export default function App() {
             <View style={styles.sectionCard}>
               <View style={styles.sectionHeader}>
                 <Text style={styles.sectionTitle}>GEOPOSICIÓN EN TIEMPO REAL</Text>
-                <Text style={styles.sectionBadge}>ACTUALIZACIÓN 1s LOCAL</Text>
+                <Text style={styles.sectionBadge}>LOCAL 1s</Text>
               </View>
 
               <View style={styles.telemetryGrid}>
@@ -438,7 +440,7 @@ export default function App() {
             {/* Topocentric Look Angles for Observer */}
             <View style={styles.sectionCard}>
               <View style={styles.sectionHeader}>
-                <Text style={styles.sectionTitle}>VECTORES TOPOCÉNTRICOS (OBSERVADOR)</Text>
+                <Text style={styles.sectionTitle}>VECTORES TOPOCÉNTRICOS</Text>
                 <Text style={styles.sectionBadgeGold}>{selectedCityName.toUpperCase()}</Text>
               </View>
 
@@ -481,9 +483,11 @@ export default function App() {
             {/* Target Header */}
             <View style={styles.mainCard}>
               <View style={styles.cardHeader}>
-                <View>
+                <View style={styles.cardHeaderLeft}>
                   <Text style={styles.targetLabel}>VENTANA DE PASES VISIBLES</Text>
-                  <Text style={styles.targetName}>{tleInfo?.name || 'ISS (ZARYA)'}</Text>
+                  <Text style={styles.targetName} numberOfLines={1} ellipsizeMode="tail">
+                    {tleInfo?.name || 'ISS (ZARYA)'}
+                  </Text>
                 </View>
                 <Text style={styles.sectionBadgeGold}>{selectedCityName.toUpperCase()}</Text>
               </View>
@@ -612,11 +616,11 @@ export default function App() {
           <>
             <View style={styles.mainCard}>
               <View style={styles.cardHeader}>
-                <View>
+                <View style={styles.cardHeaderLeft}>
                   <Text style={styles.targetLabel}>CONTROL DE CALIDAD ORBITAL</Text>
                   <Text style={styles.targetName}>Validación Cruzada ISS</Text>
                 </View>
-                <Text style={styles.sectionBadgeGold}>GPS / GROUND TRUTH</Text>
+                <Text style={styles.sectionBadgeGold}>REFERENCIA GPS</Text>
               </View>
               <Text style={styles.passHeaderNote}>
                 Contrasta la propagación matemática SGP4 local contra las coordenadas de referencia en tiempo real de la API Where The ISS At?.
@@ -722,7 +726,7 @@ export default function App() {
             {/* Elevation Mask Settings */}
             <View style={styles.sectionCard}>
               <View style={styles.sectionHeader}>
-                <Text style={styles.sectionTitle}>MÁSCARA DE ELEVACIÓN DE HORIZONTE</Text>
+                <Text style={styles.sectionTitle}>MÁSCARA DE ELEVACIÓN</Text>
                 <Text style={styles.sectionBadgeMint}>{elevationMask.toFixed(1)}°</Text>
               </View>
               <Text style={styles.configSubtitle}>
@@ -956,7 +960,7 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     padding: 16,
-    paddingBottom: 90,
+    paddingBottom: 130,
   },
   mainCard: {
     backgroundColor: colors.card,
@@ -971,6 +975,11 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'flex-start',
     marginBottom: 14,
+    gap: 8,
+  },
+  cardHeaderLeft: {
+    flex: 1,
+    marginRight: 8,
   },
   targetLabel: {
     color: colors.textMuted,
@@ -991,6 +1000,7 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     borderWidth: 1,
     borderColor: colors.accentGold,
+    flexShrink: 0,
   },
   changeTargetText: {
     color: colors.accentGold,
@@ -1039,27 +1049,32 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     marginBottom: 12,
+    gap: 8,
   },
   sectionTitle: {
     color: colors.textPrimary,
-    fontSize: 13,
+    fontSize: 12.5,
     fontWeight: '800',
-    letterSpacing: 0.8,
+    letterSpacing: 0.5,
+    flexShrink: 1,
   },
   sectionBadge: {
     color: colors.accentMint,
     fontSize: 10,
     fontWeight: '700',
+    flexShrink: 0,
   },
   sectionBadgeGold: {
     color: colors.accentGold,
     fontSize: 10,
     fontWeight: '700',
+    flexShrink: 0,
   },
   sectionBadgeMint: {
     color: colors.accentMint,
-    fontSize: 12,
+    fontSize: 11,
     fontWeight: '800',
+    flexShrink: 0,
   },
   telemetryGrid: {
     flexDirection: 'row',
