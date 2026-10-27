@@ -29,11 +29,14 @@ export class WhereTheIssProvider implements IDataProvider {
     try {
       const response = await fetch(`${WhereTheIssProvider.BASE_URL}/tles`);
       if (!response.ok) return null;
-      const data = await response.json();
+      const rawName = (data.name || '').trim();
+      const displayName =
+        rawName.toLowerCase() === 'iss' ? 'ISS (ZARYA)' : (rawName.toUpperCase() || 'ISS (ZARYA)');
+
       return {
         line1: data.line1,
         line2: data.line2,
-        name: data.name || 'ISS (ZARYA)',
+        name: displayName,
       };
     } catch {
       return null;

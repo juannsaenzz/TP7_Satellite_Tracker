@@ -230,9 +230,11 @@ export default function App() {
         const provider = new WhereTheIssProvider();
         const data = await provider.getOrbitalData(25544);
         if (data) {
-          const rec = Sgp4Engine.parseTle(data.line1, data.line2);
+          const displayName =
+            data.name.toLowerCase() === 'iss' ? 'ISS (ZARYA)' : (data.name.toUpperCase() || 'ISS (ZARYA)');
+          const normalizedData = { ...data, name: displayName };
           setSatrec(rec);
-          setTleInfo(data);
+          setTleInfo(normalizedData);
           const now = Date.now();
           setTleFetchedAt(now);
 
@@ -242,7 +244,7 @@ export default function App() {
           const gt = GroundTrackService.calculateGroundTrack(rec, new Date(), 30);
           setGroundTrack(gt);
 
-          recalculatePasses(rec, 25544, data.name, observer, elevationMask);
+          recalculatePasses(rec, 25544, displayName, observer, elevationMask);
           runValidation(data.line1, data.line2, now);
         }
       } catch (err) {
