@@ -592,6 +592,7 @@ export default function App() {
                         <Text style={styles.passTableSub}>Máx. {p.maxElevation.azimuth.toFixed(0)}°</Text>
                       </View>
                       <View style={{ flex: 1.2, alignItems: 'flex-end' }}>
+                        <Text style={styles.passTableSub}>DURACIÓN</Text>
                         <Text style={styles.passTableDuration}>{Math.round(p.durationSeconds / 60)} min</Text>
                         <TouchableOpacity
                           style={styles.passTableScheduleBtn}
