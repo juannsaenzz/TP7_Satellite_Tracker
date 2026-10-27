@@ -86,6 +86,7 @@ android/app/src/main/res/drawable-*/
 # Deliverables (except README.md)
 docs/
 *.pdf
+*.mp4
 *.md
 !README.md
 

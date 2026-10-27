@@ -64,13 +64,15 @@ src/
 
 ---
 
-## Documentación Técnica de Entrega (PDFs)
+## Documentación Técnica y Entregables
 
-El proyecto incluye los 3 informes técnicos exigidos por la Sección 6 del PRD (entregados en formato PDF adjunto):
+El proyecto incluye los 3 informes técnicos exigidos por la Sección 6 del PRD (ubicados en el directorio raíz de entrega `c:\tp_7\` en formato PDF):
 
-- **Documento Técnico de Propagación y Geometría (`documento_tecnico.pdf`):** Fundamentos de astrodinámica, transformaciones TEME $\rightarrow$ ECEF $\rightarrow$ Geodésico $\rightarrow$ Topocéntrico SEZ, algoritmos de antimeridiano y limitaciones físicas de SGP4.
-- **Informe de Validación y Precisión Orbital (`informe_validacion.pdf`):** Tabla comparativa empírica de 10 muestras temporales contra *Where The ISS At?*, descomposición de error en superficie y altitud, y curva de degradación según la antigüedad del TLE.
-- **Decisiones de Fuentes de Datos y Estrategia de Caché (`decisiones_fuentes_datos.pdf`):** Comparativa CelesTrak / Space-Track / N2YO / Where The ISS At?, justificación técnica de **Starlink SupGP** derivado de efemérides del operador frente a TLEs de radar balísticos, y diseño de la cascada de conmutación ante caídas.
+- **Documento Técnico de Propagación y Geometría (`Documento técnico - TP7 Satellite_Tracker.pdf`):** Fundamentos de astrodinámica, transformaciones TEME $\rightarrow$ ECEF $\rightarrow$ Geodésico $\rightarrow$ Topocéntrico SEZ, algoritmos de antimeridiano y limitaciones físicas de SGP4.
+- **Informe de Validación y Precisión Orbital (`Informe de validación - TP7 Satellite_Tracker.pdf`):** Tabla comparativa empírica de 10 muestras temporales contra *Where The ISS At?*, descomposición de error en superficie y altitud, y curva de degradación según la antigüedad del TLE.
+- **Decisiones de Fuentes de Datos y Estrategia de Caché (`Documento de decisiones de datos - TP7 Satellite_Tracker.pdf`):** Comparativa CelesTrak / Space-Track / N2YO / Where The ISS At?, justificación técnica de **Starlink SupGP** derivado de efemérides del operador frente a TLEs de radar balísticos, y diseño de la cascada de conmutación ante caídas.
+- **Video Demostración (`Flujo_demo -  TP7 Satellite_Tracker.mp4`):** Recorrido audiovisual del flujo completo de la aplicación (inicialización offline, mapa, vectores topocéntricos, pases, Sky Chart polar, alerta de pase en cortina de notificaciones, brújula celestial y validación matemática en tiempo real).
+- **Binario Instalable (`SatelliteTracker.apk`):** APK Release standalone optimizado de 76.7 MB para instalación directa sin servidor de desarrollo.
 
 ---
 
@@ -115,9 +117,9 @@ npm start
 npm run android
 ```
 
-### 3. Compilación de APK Standalone
+### 3. Compilación de APK Release Autónomo
 ```sh
 cd android
-./gradlew assembleDebug
+./gradlew assembleRelease
 ```
-El archivo APK autónomo se genera en `android/app/build/outputs/apk/debug/app-debug.apk`.
+El archivo APK autónomo de producción se genera en `android/app/build/outputs/apk/release/app-release.apk` (o el binario de entrega directa `SatelliteTracker.apk`).
