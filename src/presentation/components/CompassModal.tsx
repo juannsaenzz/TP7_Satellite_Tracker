@@ -66,7 +66,8 @@ export const CompassModal: React.FC<CompassModalProps> = ({
   return (
     <Modal visible={visible} animationType="slide" transparent={false} onRequestClose={onClose}>
       <SafeAreaView style={styles.container}>
-        {/* Header */}        <View style={styles.header}>
+        {/* Header */}
+        <View style={styles.header}>
           <View>
             <Text style={styles.headerTitle}>Orientación Asistida</Text>
             <Text style={styles.headerSubtitle}>BRÚJULA Y APUNTADOR CELESTE</Text>
