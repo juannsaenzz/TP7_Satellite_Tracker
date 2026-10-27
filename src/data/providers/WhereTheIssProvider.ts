@@ -29,6 +29,7 @@ export class WhereTheIssProvider implements IDataProvider {
     try {
       const response = await fetch(`${WhereTheIssProvider.BASE_URL}/tles`);
       if (!response.ok) return null;
+      const data = await response.json();
       const rawName = (data.name || '').trim();
       const displayName =
         rawName.toLowerCase() === 'iss' ? 'ISS (ZARYA)' : (rawName.toUpperCase() || 'ISS (ZARYA)');

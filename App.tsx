@@ -322,14 +322,38 @@ export default function App() {
   }, [satrec, observer, elevationMask]);
 
   async function runValidation(l1?: string, l2?: string, fetchedAt?: number) {
-    const line1 = l1 || tleInfo?.line1;
-    const line2 = l2 || tleInfo?.line2;
-    const timestamp = fetchedAt || tleFetchedAt;
-
-    if (!line1 || !line2) return;
-
     setValidating(true);
     try {
+      let line1 = l1;
+      let line2 = l2;
+      let timestamp = fetchedAt;
+
+      if (!line1 || !line2) {
+        try {
+          const provider = new WhereTheIssProvider();
+          const liveData = await provider.getOrbitalData(25544);
+          if (liveData) {
+            line1 = liveData.line1;
+            line2 = liveData.line2;
+            timestamp = Date.now();
+            if (!tleInfo || tleInfo.line2.startsWith('2 25544')) {
+              setTleInfo(liveData);
+              setTleFetchedAt(timestamp);
+              const rec = Sgp4Engine.parseTle(line1, line2);
+              setSatrec(rec);
+            }
+          }
+        } catch {
+          // Fall back to current state
+        }
+      }
+
+      line1 = line1 || tleInfo?.line1;
+      line2 = line2 || tleInfo?.line2;
+      timestamp = timestamp || tleFetchedAt;
+
+      if (!line1 || !line2) return;
+
       const report = await ValidationService.validateIss(line1, line2, timestamp);
       setValidation(report);
     } catch (err) {
@@ -699,7 +723,13 @@ export default function App() {
                 <View style={styles.validationBox}>
                   <View style={styles.errorBanner}>
                     <Text style={styles.errorLabel}>ERROR DE DISTANCIA ECEF 3D</Text>
-                    <Text style={styles.errorNumber}>{validation.errorKm.toFixed(2)} km</Text>
+                    <Text
+                      style={[
+                        styles.errorNumber,
+                        validation.errorKm > 5.0 && styles.errorNumberFail,
+                      ]}>
+                      {validation.errorKm.toFixed(2)} km
+                    </Text>
                     <Text style={styles.errorSub}>
                       Δ Superficie: {validation.surfaceErrorKm.toFixed(2)} km • Δ Altitud:{' '}
                       {validation.altitudeDifferenceKm.toFixed(2)} km
@@ -711,9 +741,15 @@ export default function App() {
                       Antigüedad TLE: {validation.dataAgeHours.toFixed(1)} h (
                       {validation.isStale ? 'OBSOLETO' : 'ACTUALIZADO'})
                     </Text>
-                    <Text style={styles.validationStatusPass}>
-                      {'✓ APROBADO: Error dentro de tolerancia SGP4 (< 5 km)'}
-                    </Text>
+                    {validation.errorKm <= 5.0 ? (
+                      <Text style={styles.validationStatusPass}>
+                        {'✓ APROBADO: Error dentro de tolerancia SGP4 (< 5 km)'}
+                      </Text>
+                    ) : (
+                      <Text style={styles.validationStatusFail}>
+                        {`✗ DESVIACIÓN EXCESIVA (${validation.errorKm.toFixed(1)} km > 5 km) - Requiere TLE reciente`}
+                      </Text>
+                    )}
                   </View>
                 </View>
               ) : (
@@ -1411,6 +1447,9 @@ const styles = StyleSheet.create({
     fontWeight: '900',
     marginTop: 2,
   },
+  errorNumberFail: {
+    color: '#FF5252',
+  },
   errorSub: {
     color: colors.textDim,
     fontSize: 10,
@@ -1425,6 +1464,12 @@ const styles = StyleSheet.create({
   },
   validationStatusPass: {
     color: colors.accentMint,
+    fontSize: 11,
+    fontWeight: '700',
+    marginTop: 2,
+  },
+  validationStatusFail: {
+    color: '#FF5252',
     fontSize: 11,
     fontWeight: '700',
     marginTop: 2,
