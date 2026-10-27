@@ -238,18 +238,41 @@ export default function App() {
 
   useEffect(() => {
     async function loadData() {
-      setLoading(true);
+      // 1. Instant offline start using bundled default ISS (0 ms, guaranteed)
+      const defaultSat = CatalogService.DEFAULT_SATELLITES[0];
+      try {
+        const defaultRec = Sgp4Engine.parseTle(defaultSat.tleLine1, defaultSat.tleLine2);
+        setSatrec(defaultRec);
+        setTleInfo({ line1: defaultSat.tleLine1, line2: defaultSat.tleLine2, name: 'ISS (ZARYA)' });
+        setTleFetchedAt(defaultSat.updatedAt);
+        setOrbitalPeriod(Sgp4Engine.getOrbitalPeriodMinutes(defaultRec));
+        setGroundTrack(GroundTrackService.calculateGroundTrack(defaultRec, new Date(), 30));
+
+        const now = new Date();
+        const initialPos = Sgp4Engine.getGeoposition(defaultRec, now);
+        if (initialPos) {
+          setCurrentPosition(initialPos);
+          setLookAngle(Sgp4Engine.getLookAngles(defaultRec, now, observer));
+          setFootprint(FootprintService.calculateFootprintRadius(initialPos.altitude, elevationMask));
+        }
+        recalculatePasses(defaultRec, 25544, 'ISS (ZARYA)', observer, elevationMask);
+      } catch (err) {
+        console.warn('Initial default load error:', err);
+      }
+
+      // 2. Fetch live updated data from network in background
       try {
         const provider = new WhereTheIssProvider();
         const data = await provider.getOrbitalData(25544);
         if (data) {
+          const rec = Sgp4Engine.parseTle(data.line1, data.line2);
           const displayName =
             data.name.toLowerCase() === 'iss' ? 'ISS (ZARYA)' : (data.name.toUpperCase() || 'ISS (ZARYA)');
           const normalizedData = { ...data, name: displayName };
           setSatrec(rec);
           setTleInfo(normalizedData);
-          const now = Date.now();
-          setTleFetchedAt(now);
+          const nowMs = Date.now();
+          setTleFetchedAt(nowMs);
 
           const period = Sgp4Engine.getOrbitalPeriodMinutes(rec);
           setOrbitalPeriod(period);
@@ -257,11 +280,19 @@ export default function App() {
           const gt = GroundTrackService.calculateGroundTrack(rec, new Date(), 30);
           setGroundTrack(gt);
 
+          const now = new Date();
+          const livePos = Sgp4Engine.getGeoposition(rec, now);
+          if (livePos) {
+            setCurrentPosition(livePos);
+            setLookAngle(Sgp4Engine.getLookAngles(rec, now, observer));
+            setFootprint(FootprintService.calculateFootprintRadius(livePos.altitude, elevationMask));
+          }
+
           recalculatePasses(rec, 25544, displayName, observer, elevationMask);
-          runValidation(data.line1, data.line2, now);
+          runValidation(data.line1, data.line2, nowMs);
         }
       } catch (err) {
-        console.error('Failed to load TLE:', err);
+        console.error('Failed to load live TLE:', err);
       } finally {
         setLoading(false);
       }
