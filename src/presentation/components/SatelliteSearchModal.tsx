@@ -19,6 +19,7 @@ interface SatelliteSearchModalProps {
   onClose: () => void;
   onSelectSatellite: (satellite: Satellite) => void;
   currentNoradId?: number;
+  initialCategory?: SatelliteCategory;
 }
 
 const CATEGORY_TABS: { label: string; category: SatelliteCategory }[] = [
@@ -34,8 +35,9 @@ export const SatelliteSearchModal: React.FC<SatelliteSearchModalProps> = ({
   onClose,
   onSelectSatellite,
   currentNoradId,
+  initialCategory,
 }) => {
-  const [activeCategory, setActiveCategory] = useState<SatelliteCategory>('iss');
+  const [activeCategory, setActiveCategory] = useState<SatelliteCategory>(initialCategory || 'iss');
   const [searchQuery, setSearchQuery] = useState('');
   const [satellites, setSatellites] = useState<Satellite[]>([]);
   const [catalogMeta, setCatalogMeta] = useState<CatalogResult | null>(null);
@@ -43,9 +45,11 @@ export const SatelliteSearchModal: React.FC<SatelliteSearchModalProps> = ({
 
   useEffect(() => {
     if (visible) {
-      loadCategoryData(activeCategory);
+      const cat = initialCategory || activeCategory;
+      setActiveCategory(cat);
+      loadCategoryData(cat);
     }
-  }, [visible, activeCategory]);
+  }, [visible, initialCategory]);
 
   async function loadCategoryData(cat: SatelliteCategory, forceRefresh = false) {
     setLoading(true);

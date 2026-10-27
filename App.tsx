@@ -35,6 +35,14 @@ const LOGO_ICON_IMG = require('./src/assets/images/logo_icon.png');
 
 const CATEGORIES = ['Todos', 'ISS', 'Starlink', 'GPS', 'Clima'];
 
+const CATEGORY_MAP: Record<string, 'iss' | 'starlink' | 'gps' | 'weather'> = {
+  Todos: 'iss',
+  ISS: 'iss',
+  Starlink: 'starlink',
+  GPS: 'gps',
+  Clima: 'weather',
+};
+
 interface CityPreset {
   name: string;
   latitude: number;
@@ -179,6 +187,11 @@ export default function App() {
       setGroundTrack(gt);
 
       recalculatePasses(rec, sat.noradId, sat.name, observer, elevationMask);
+
+      if (sat.category === 'starlink') setSelectedCategory('Starlink');
+      else if (sat.category === 'gps') setSelectedCategory('GPS');
+      else if (sat.category === 'weather') setSelectedCategory('Clima');
+      else if (sat.category === 'iss') setSelectedCategory('ISS');
 
       if (sat.noradId === 25544) {
         runValidation(sat.tleLine1, sat.tleLine2, sat.updatedAt);
@@ -329,25 +342,27 @@ export default function App() {
         </TouchableOpacity>
       </View>
 
-      {/* Category Pills (Figma style) */}
-      <View style={styles.categoriesWrapper}>
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.categoriesList}>
-          {CATEGORIES.map(cat => {
-            const isSelected = selectedCategory === cat;
-            return (
-              <TouchableOpacity
-                key={cat}
-                onPress={() => {
-                  setSelectedCategory(cat);
-                  setCatalogModalVisible(true);
-                }}
-                style={[styles.categoryPill, isSelected && styles.categoryPillActive]}>
-                <Text style={[styles.categoryText, isSelected && styles.categoryTextActive]}>{cat}</Text>
-              </TouchableOpacity>
-            );
-          })}
-        </ScrollView>
-      </View>
+      {/* Category Pills (Figma style) - Only on Tracker tab */}
+      {activeTab === 'tracker' && (
+        <View style={styles.categoriesWrapper}>
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.categoriesList}>
+            {CATEGORIES.map(cat => {
+              const isSelected = selectedCategory === cat;
+              return (
+                <TouchableOpacity
+                  key={cat}
+                  onPress={() => {
+                    setSelectedCategory(cat);
+                    setCatalogModalVisible(true);
+                  }}
+                  style={[styles.categoryPill, isSelected && styles.categoryPillActive]}>
+                  <Text style={[styles.categoryText, isSelected && styles.categoryTextActive]}>{cat}</Text>
+                </TouchableOpacity>
+              );
+            })}
+          </ScrollView>
+        </View>
+      )}
 
       <ScrollView contentContainerStyle={styles.scrollContent}>
         {/* ======================================================== */}
@@ -857,6 +872,7 @@ export default function App() {
         onClose={() => setCatalogModalVisible(false)}
         onSelectSatellite={handleSelectSatellite}
         currentNoradId={tleInfo ? parseInt(tleInfo.line2.substring(2, 7).trim(), 10) : 25544}
+        initialCategory={CATEGORY_MAP[selectedCategory] || 'iss'}
       />
 
       {/* Assisted Orientation / Compass Mode Modal */}
