@@ -66,7 +66,7 @@ src/
 
 ## Documentación Técnica y Entregables
 
-El proyecto incluye los 3 informes técnicos exigidos por la Sección 6 del PRD (ubicados en el directorio raíz de entrega `c:\tp_7\` en formato PDF):
+El proyecto incluye los 3 informes técnicos exigidos por la Sección 6 del PRD (adjuntos en la entrega del trabajo práctico en formato PDF):
 
 - **Documento Técnico de Propagación y Geometría (`Documento técnico - TP7 Satellite_Tracker.pdf`):** Fundamentos de astrodinámica, transformaciones TEME $\rightarrow$ ECEF $\rightarrow$ Geodésico $\rightarrow$ Topocéntrico SEZ, algoritmos de antimeridiano y limitaciones físicas de SGP4.
 - **Informe de Validación y Precisión Orbital (`Informe de validación - TP7 Satellite_Tracker.pdf`):** Tabla comparativa empírica de 10 muestras temporales contra *Where The ISS At?*, descomposición de error en superficie y altitud, y curva de degradación según la antigüedad del TLE.
