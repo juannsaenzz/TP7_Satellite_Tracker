@@ -728,11 +728,19 @@ export default function App() {
                         styles.errorNumber,
                         validation.errorKm > 5.0 && styles.errorNumberFail,
                       ]}>
-                      {validation.errorKm.toFixed(2)} km
+                      {validation.errorKm < 0.01
+                        ? `${validation.errorKm.toFixed(3)} km (${(validation.errorKm * 1000).toFixed(0)} m)`
+                        : `${validation.errorKm.toFixed(2)} km`}
                     </Text>
                     <Text style={styles.errorSub}>
-                      Δ Superficie: {validation.surfaceErrorKm.toFixed(2)} km • Δ Altitud:{' '}
-                      {validation.altitudeDifferenceKm.toFixed(2)} km
+                      Δ Superficie:{' '}
+                      {validation.surfaceErrorKm < 0.01
+                        ? `${(validation.surfaceErrorKm * 1000).toFixed(1)} m`
+                        : `${validation.surfaceErrorKm.toFixed(2)} km`}{' '}
+                      • Δ Altitud:{' '}
+                      {validation.altitudeDifferenceKm < 0.01
+                        ? `${(validation.altitudeDifferenceKm * 1000).toFixed(1)} m`
+                        : `${validation.altitudeDifferenceKm.toFixed(2)} km`}
                     </Text>
                   </View>
 

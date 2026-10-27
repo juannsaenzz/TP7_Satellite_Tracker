@@ -85,9 +85,9 @@ export class ValidationService {
     const distance3dKm = Math.sqrt((x1 - x2) ** 2 + (y1 - y2) ** 2 + (z1 - z2) ** 2);
 
     return {
-      surfaceKm: Math.round(surfaceKm * 100) / 100,
-      altitudeDiffKm: Math.round(altitudeDiffKm * 100) / 100,
-      distance3dKm: Math.round(distance3dKm * 100) / 100,
+      surfaceKm: Math.round(surfaceKm * 1000) / 1000,
+      altitudeDiffKm: Math.round(altitudeDiffKm * 1000) / 1000,
+      distance3dKm: Math.round(distance3dKm * 1000) / 1000,
     };
   }
 }
